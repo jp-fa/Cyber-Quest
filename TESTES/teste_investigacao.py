@@ -5,87 +5,87 @@
 
 # from investigacao import *
 
+# # # encontrar_documento("projeto_oraculo")
+# # # encontrar_documento("relatorio_seguranca")
+
+# # # exibir_inventario()
+
+# # # consultar_documento()
+
+# # # entregar_documento()
+
+# # # consultar_historico_entregas()
+
+# # # from investigacao import *
+
+# # # # Encontrar documento
+# # # encontrar_documento("projeto_oraculo")
+
+# # # # Primeira entrega
+# # # print("\n===== PRIMEIRA ENTREGA =====")
+# # # entregar_documento()
+
+# # # # Segunda tentativa
+# # # print("\n===== SEGUNDA ENTREGA =====")
+# # # entregar_documento()
+
+# # # # Consultar inventário
+# # # exibir_inventario()
+
+# # # from investigacao import *
+
+# # # print("\n===== PRIMEIRA TENTATIVA =====")
+# # # encontrar_documento("projeto_oraculo")
+
+# # # print("\n===== SEGUNDA TENTATIVA =====")
+# # # encontrar_documento("projeto_oraculo")
+
+# # # print("\n===== INVENTÁRIO FINAL =====")
+# # # exibir_inventario()
+
+# # # from investigacao import *
+
+# # # # Encontrar documento
+# # # encontrar_documento("projeto_oraculo")
+
+# # # # Tentar entregar e cancelar
+# # # print("\n===== TESTE DE CANCELAMENTO =====")
+# # # entregar_documento()
+
+# # # # Conferir inventário
+# # # print("\n===== INVENTÁRIO FINAL =====")
+# # # exibir_inventario()
+
+# # # from investigacao import *
+
+# # # encontrar_documento("projeto_oraculo")
+
+# # # print("\n===== TESTE DE DESTINATÁRIO INVÁLIDO =====")
+# # # entregar_documento()
+
+# # # print("\n===== INVENTÁRIO FINAL =====")
+# # # exibir_inventario()
+
+# # # print("\n===== TESTE 1: ENCONTRAR DOCUMENTO =====")
+# # # encontrar_documento("projeto_oraculo")
+
+# # # print("\n===== TESTE 2: TENTAR ENCONTRAR NOVAMENTE =====")
+# # # encontrar_documento("projeto_oraculo")
+
+# # # print("\n===== TESTE 3: EXIBIR INVENTÁRIO =====")
+# # # exibir_inventario()
+
+# # # print("\n===== TESTE 4: CONSULTAR DOCUMENTO =====")
+# # # consultar_documento()
+
+# # # print("\n===== TESTE 5: LISTAR DESTINATÁRIOS =====")
+# # # listar_destinatarios()
+
+# # # print("\n===== TESTE 6: CONSULTAR HISTÓRICO =====")
+# # # consultar_historico_entregas()
+
+# # print("\n===== PREPARANDO DOCUMENTO PARA ENTREGA =====")
 # # encontrar_documento("projeto_oraculo")
-# # encontrar_documento("relatorio_seguranca")
-
-# # exibir_inventario()
-
-# # consultar_documento()
-
-# # entregar_documento()
-
-# # consultar_historico_entregas()
-
-# # from investigacao import *
-
-# # # Encontrar documento
-# # encontrar_documento("projeto_oraculo")
-
-# # # Primeira entrega
-# # print("\n===== PRIMEIRA ENTREGA =====")
-# # entregar_documento()
-
-# # # Segunda tentativa
-# # print("\n===== SEGUNDA ENTREGA =====")
-# # entregar_documento()
-
-# # # Consultar inventário
-# # exibir_inventario()
-
-# # from investigacao import *
-
-# # print("\n===== PRIMEIRA TENTATIVA =====")
-# # encontrar_documento("projeto_oraculo")
-
-# # print("\n===== SEGUNDA TENTATIVA =====")
-# # encontrar_documento("projeto_oraculo")
-
-# # print("\n===== INVENTÁRIO FINAL =====")
-# # exibir_inventario()
-
-# # from investigacao import *
-
-# # # Encontrar documento
-# # encontrar_documento("projeto_oraculo")
-
-# # # Tentar entregar e cancelar
-# # print("\n===== TESTE DE CANCELAMENTO =====")
-# # entregar_documento()
-
-# # # Conferir inventário
-# # print("\n===== INVENTÁRIO FINAL =====")
-# # exibir_inventario()
-
-# # from investigacao import *
-
-# # encontrar_documento("projeto_oraculo")
-
-# # print("\n===== TESTE DE DESTINATÁRIO INVÁLIDO =====")
-# # entregar_documento()
-
-# # print("\n===== INVENTÁRIO FINAL =====")
-# # exibir_inventario()
-
-# # print("\n===== TESTE 1: ENCONTRAR DOCUMENTO =====")
-# # encontrar_documento("projeto_oraculo")
-
-# # print("\n===== TESTE 2: TENTAR ENCONTRAR NOVAMENTE =====")
-# # encontrar_documento("projeto_oraculo")
-
-# # print("\n===== TESTE 3: EXIBIR INVENTÁRIO =====")
-# # exibir_inventario()
-
-# # print("\n===== TESTE 4: CONSULTAR DOCUMENTO =====")
-# # consultar_documento()
-
-# # print("\n===== TESTE 5: LISTAR DESTINATÁRIOS =====")
-# # listar_destinatarios()
-
-# # print("\n===== TESTE 6: CONSULTAR HISTÓRICO =====")
-# # consultar_historico_entregas()
-
-# print("\n===== PREPARANDO DOCUMENTO PARA ENTREGA =====")
-# encontrar_documento("projeto_oraculo")
 
 # print("\n===== TESTE 7: ENTREGAR DOCUMENTO =====")
 # entregar_documento()
