@@ -1,287 +1,11 @@
+from copy import deepcopy
 
-personagens = {
-    "alex": {
-        "nome": "Alex",
-        "cargo": "Hacker",
-        "idade": 28,
-        "confianca": "Indefinida"
-    },
-
-    "helena": {
-        "nome": "Helena Voss",
-        "cargo": "Diretora da NEXUS",
-        "idade": 30,
-        "confianca": 30
-    },
-
-    "karla": {
-        "nome": "Dra. Karla",
-        "cargo": "Cientista",
-        "idade": 32,
-        "confianca": 50
-    },
-
-    "dante": {
-        "nome": "Dante Moreau",
-        "cargo": "Aliado",
-        "idade": 29,
-        "confianca": 40
-    },
-
-    "oraculo": {
-        "nome": "ORÁCULO",
-        "cargo": "Inteligência Artificial",
-        "idade": 3,
-        "confianca": 0
-    }
-}
+from personagens import personagens, alterar_confianca
 
 
 # ==========================================
-# EXIBIR INFORMAÇÕES DOS PERSONAGENS
+# DOCUMENTOS DO JOGO
 # ==========================================
-
-def exibir_personagem(personagem):
-
-    if personagem in personagens:
-
-        dados = personagens[personagem]
-
-        print("\n================================")
-        print("     INFORMAÇÕES DO PERSONAGEM")
-        print("================================")
-
-        print(f"Nome: {dados['nome']}")
-        print(f"Cargo: {dados['cargo']}")
-        print(f"Idade: {dados['idade']}")
-        print(f"Confiança: {dados['confianca']}")
-
-        print("================================")
-
-    else:
-        print("Personagem não encontrado!")
-
-
-# ==========================================
-# LISTAR PERSONAGENS
-# ==========================================
-
-def listar_personagens():
-
-    print("\n======= PERSONAGENS =======")
-
-    for personagem in personagens:
-        print(f"- {personagens[personagem]['nome']}")
-
-    print("===========================")
-
-
-# ==========================================
-# CONSULTAR PERSONAGEM
-# ==========================================
-
-def consultar_personagem():
-
-    listar_personagens()
-
-    escolha = input(
-        "\nQual personagem deseja consultar? "
-    ).lower().strip()
-
-    exibir_personagem(escolha)
-
-
-# ==========================================
-# CONTROLE DE PERSONAGENS ABORDADOS
-# ==========================================
-
-personagens_abordados = {
-    "capitulo_1": [],
-    "capitulo_2": [],
-    "capitulo_3": []
-}
-
-
-# ==========================================
-# HISTÓRICO DE CONFIANÇA POR CAPÍTULO
-# ==========================================
-
-historico_confianca = {
-    "capitulo_1": [],
-    "capitulo_2": [],
-    "capitulo_3": []
-}
-
-
-# ==========================================
-# ABORDAR PERSONAGEM
-# ==========================================
-
-def abordar_personagem(personagem, capitulo):
-
-    if personagem not in personagens:
-        print("Personagem não encontrado!")
-        return
-
-    if capitulo not in personagens_abordados:
-        print("Capítulo inválido!")
-        return
-
-    if personagem in personagens_abordados[capitulo]:
-        print("Você já conversou com este personagem neste capítulo!")
-        return
-
-    personagens_abordados[capitulo].append(personagem)
-
-    print(
-        f"\nVocê iniciou uma conversa com "
-        f"{personagens[personagem]['nome']}."
-    )
-
-    exibir_personagem(personagem)
-
-
-# ==========================================
-# ALTERAR CONFIANÇA
-# ==========================================
-
-def alterar_confianca(personagem, valor, capitulo):
-
-    if personagem not in personagens:
-        print("Personagem não encontrado!")
-        return
-
-    if capitulo not in historico_confianca:
-        print("Capítulo inválido!")
-        return
-
-    confianca_atual = personagens[personagem]["confianca"]
-
-    if not isinstance(confianca_atual, int):
-        print("Este personagem não possui confiança numérica.")
-        return
-
-    nova_confianca = confianca_atual + valor
-
-    if nova_confianca > 100:
-        nova_confianca = 100
-
-    elif nova_confianca < 0:
-        nova_confianca = 0
-
-    personagens[personagem]["confianca"] = nova_confianca
-
-    historico_confianca[capitulo].append({
-        "personagem": personagem,
-        "anterior": confianca_atual,
-        "nova": nova_confianca,
-        "alteracao": nova_confianca - confianca_atual
-    })
-
-    print(
-        f"\nConfiança de {personagens[personagem]['nome']} atualizada!"
-    )
-    print(f"Confiança anterior: {confianca_atual}")
-    print(f"Nova confiança: {nova_confianca}")
-
-
-# ==========================================
-# CONSULTAR NÍVEL DE CONFIANÇA
-# ==========================================
-
-def consultar_confianca(personagem):
-
-    if personagem not in personagens:
-        print("Personagem não encontrado!")
-        return
-
-    confianca = personagens[personagem]["confianca"]
-
-    print("\n======= NÍVEL DE CONFIANÇA =======")
-    print(f"Personagem: {personagens[personagem]['nome']}")
-    print(f"Confiança: {confianca}")
-
-    if isinstance(confianca, int):
-
-        if confianca >= 70:
-            print("Relação: Alta confiança")
-
-        elif confianca >= 40:
-            print("Relação: Confiança moderada")
-
-        else:
-            print("Relação: Baixa confiança")
-
-    else:
-        print("Relação: Não definida")
-
-    print("=================================")
-
-
-# ==========================================
-# TESTES DO CÓDIGO
-# ==========================================
-
-# Abordagem de personagens
-abordar_personagem("dante", "capitulo_1")
-abordar_personagem("dante", "capitulo_1")
-
-print(personagens_abordados)
-
-
-# Consulta de confiança
-consultar_confianca("dante")
-consultar_confianca("helena")
-consultar_confianca("alex")
-
-
-# Alterações de confiança
-alterar_confianca("dante", 10, "capitulo_1")
-alterar_confianca("helena", -15, "capitulo_1")
-alterar_confianca("dante", 5, "capitulo_2")
-
-
-# Exibir histórico
-print("\n======= HISTÓRICO DE CONFIANÇA =======")
-print(historico_confianca)
-
-def consultar_historico_confianca(capitulo):
-    if capitulo not in historico_confianca:
-        print("Capítulo inválido!")
-        return
-
-    historico = historico_confianca[capitulo]
-
-    if not historico:
-        print("Nenhuma alteração de confiança registrada neste capítulo.")
-        return
-
-    print("\n======= HISTÓRICO DE CONFIANÇA =======")
-    print(f"Capítulo: {capitulo.replace('_', ' ').title()}")
-
-    for registro in historico:
-
-        nome = personagens[registro["personagem"]]["nome"]
-
-        print("\n--------------------------------")
-        print(f"Personagem: {nome}")
-        print(f"Confiança anterior: {registro['anterior']}")
-        print(f"Nova confiança: {registro['nova']}")
-
-        if registro["alteracao"] > 0:
-            print(f"Alteração: +{registro['alteracao']}")
-
-        elif registro["alteracao"] < 0:
-            print(f"Alteração: {registro['alteracao']}")
-
-        else:
-            print("Alteração: Nenhuma")
-
-    print("======================================")
-
-consultar_historico_confianca("capitulo_1")
-consultar_historico_confianca("capitulo_2")
-consultar_historico_confianca("capitulo_3")
 
 documentos = {
 
@@ -290,7 +14,8 @@ documentos = {
         "autor": "Dra. Karla",
         "classificacao": "Confidencial",
         "encontrado": False,
-        "entregue": False
+        "entregue": False,
+        "entregue_para": None
     },
 
     "relatorio_seguranca": {
@@ -298,7 +23,8 @@ documentos = {
         "autor": "Helena Voss",
         "classificacao": "Confidencial",
         "encontrado": False,
-        "entregue": False
+        "entregue": False,
+        "entregue_para": None
     },
 
     "plano_contingencia": {
@@ -306,7 +32,8 @@ documentos = {
         "autor": "Dante Moreau",
         "classificacao": "Restrito",
         "encontrado": False,
-        "entregue": False
+        "entregue": False,
+        "entregue_para": None
     },
 
     "documento_secreto": {
@@ -314,7 +41,8 @@ documentos = {
         "autor": "ORÁCULO",
         "classificacao": "Ultrassecreto",
         "encontrado": False,
-        "entregue": False
+        "entregue": False,
+        "entregue_para": None
     }
 
 }
@@ -325,3 +53,288 @@ documentos = {
 # ==========================================
 
 inventario = []
+
+
+# ==========================================
+# HISTÓRICO DE ENTREGAS
+# ==========================================
+
+historico_entregas = []
+
+
+# ==========================================
+# ENCONTRAR DOCUMENTO
+# ==========================================
+
+def encontrar_documento(documento_id):
+
+    if documento_id not in documentos:
+        print("Documento não encontrado!")
+        return False
+
+    dados = documentos[documento_id]
+
+    if dados["encontrado"]:
+        print("Você já encontrou este documento!")
+        return False
+
+    dados["encontrado"] = True
+
+    inventario.append(documento_id)
+
+    print("\nDocumento encontrado!")
+    print(f"Nome: {dados['nome']}")
+    print(f"Autor: {dados['autor']}")
+    print(f"Classificação: {dados['classificacao']}")
+
+    return True
+
+
+# ==========================================
+# EXIBIR INVENTÁRIO
+# ==========================================
+
+def exibir_inventario():
+
+    print("\n========== INVENTÁRIO ==========")
+
+    if not inventario:
+        print("Seu inventário está vazio!")
+        print("\n================================")
+        return
+
+    for numero, documento_id in enumerate(inventario, start=1):
+
+        dados = documentos[documento_id]
+
+        print(f"\n{numero}. {dados['nome']}")
+        print(f"   Autor: {dados['autor']}")
+        print(f"   Classificação: {dados['classificacao']}")
+
+        if dados["entregue"]:
+            print(f"   Status: Entregue para {dados['entregue_para']}")
+
+        else:
+            print("   Status: Disponível")
+
+    print("\n================================")
+
+
+# ==========================================
+# CONSULTAR DOCUMENTO
+# ==========================================
+
+def consultar_documento():
+
+    if not inventario:
+        print("Não existem documentos no inventário!")
+        return
+
+    exibir_inventario()
+
+    try:
+        escolha = int(input("\nDigite o número do documento: "))
+
+    except ValueError:
+        print("Digite um número válido!")
+        return
+
+    if escolha < 1 or escolha > len(inventario):
+        print("Opção inválida!")
+        return
+
+    documento_id = inventario[escolha - 1]
+
+    dados = documentos[documento_id]
+
+    print("\n======= DETALHES DO DOCUMENTO =======")
+    print(f"Nome: {dados['nome']}")
+    print(f"Autor: {dados['autor']}")
+    print(f"Classificação: {dados['classificacao']}")
+
+    if dados["entregue"]:
+        print(f"Entregue para: {dados['entregue_para']}")
+
+    else:
+        print("Este documento ainda não foi entregue.")
+
+    print("=====================================")
+
+
+# ==========================================
+# LISTAR DESTINATÁRIOS
+# ==========================================
+
+def listar_destinatarios():
+
+    print("\n======= PERSONAGENS =======")
+
+    for personagem_id, dados in personagens.items():
+
+        # Alex é o protagonista e não recebe documentos.
+        if personagem_id == "alex":
+            continue
+
+        print(f"- {dados['nome']}")
+
+
+# ==========================================
+# ENTREGAR DOCUMENTO
+# ==========================================
+
+def entregar_documento():
+
+    if not inventario:
+        print("Você não possui documentos para entregar!")
+        return
+
+    exibir_inventario()
+
+    try:
+        escolha = int(input("\nQual documento deseja entregar? "))
+
+    except ValueError:
+        print("Digite um número válido!")
+        return
+
+    if escolha < 1 or escolha > len(inventario):
+        print("Documento inválido!")
+        return
+
+    documento_id = inventario[escolha - 1]
+
+    dados = documentos[documento_id]
+
+    if dados["entregue"]:
+        print("Este documento já foi entregue!")
+        return
+
+    listar_destinatarios()
+
+    personagem = input(
+        "\nPara quem deseja entregar? "
+    ).lower().strip()
+
+    # Verifica se o personagem existe no cadastro oficial.
+    if personagem not in personagens or personagem == "alex":
+        print("Personagem inválido!")
+        return
+
+    nome_personagem = personagens[personagem]["nome"]
+
+    confirmacao = input(
+        f"\nDeseja entregar '{dados['nome']}' "
+        f"para {nome_personagem}? (s/n): "
+    ).lower().strip()
+
+    if confirmacao != "s":
+        print("Entrega cancelada!")
+        return
+
+    # Atualiza os dados do documento.
+    dados["entregue"] = True
+    dados["entregue_para"] = nome_personagem
+
+    # Registra a entrega no histórico.
+    historico_entregas.append({
+        "documento": documento_id,
+        "personagem": personagem,
+        "nome_personagem": nome_personagem
+    })
+
+    print("\nDocumento entregue com sucesso!")
+    print(f"Documento: {dados['nome']}")
+    print(f"Destinatário: {nome_personagem}")
+
+
+# ==========================================
+# ALTERAR CONFIANÇA APÓS UMA DECISÃO
+# ==========================================
+
+def aplicar_impacto_confianca(personagem, valor, capitulo):
+
+    if personagem not in personagens or personagem == "alex":
+        print("Personagem inválido!")
+        return False
+
+    # Utiliza a função que já existe em personagens.py.
+    return alterar_confianca(personagem, valor, capitulo)
+
+
+# ==========================================
+# CONSULTAR HISTÓRICO DE ENTREGAS
+# ==========================================
+
+def consultar_historico_entregas():
+
+    print("\n======= HISTÓRICO DE ENTREGAS =======")
+
+    if not historico_entregas:
+        print("Nenhuma entrega foi realizada.")
+        print("=====================================")
+        return
+
+    for numero, registro in enumerate(historico_entregas, start=1):
+
+        dados = documentos[registro["documento"]]
+
+        print(f"\n{numero}. Documento: {dados['nome']}")
+        print(f"   Destinatário: {registro['nome_personagem']}")
+
+    print("\n=====================================")
+
+
+# ==========================================
+# PREPARAR DADOS PARA SALVAMENTO JSON
+# ==========================================
+
+def obter_estado_investigacao():
+
+    estado = {
+        "documentos": deepcopy(documentos),
+        "inventario": deepcopy(inventario),
+        "historico_entregas": deepcopy(historico_entregas)
+    }
+
+    return estado
+
+
+# ==========================================
+# RESTAURAR DADOS DA INVESTIGAÇÃO
+# ==========================================
+
+def carregar_estado_investigacao(estado):
+
+    if not isinstance(estado, dict):
+        print("Estado de investigação inválido!")
+        return False
+
+    documentos_salvos = estado.get("documentos")
+    inventario_salvo = estado.get("inventario")
+    historico_salvo = estado.get("historico_entregas")
+
+    if not isinstance(documentos_salvos, dict):
+        print("Dados dos documentos inválidos!")
+        return False
+
+    if not isinstance(inventario_salvo, list):
+        print("Dados do inventário inválidos!")
+        return False
+
+    if not isinstance(historico_salvo, list):
+        print("Histórico de entregas inválido!")
+        return False
+
+    # Atualiza os dados sem substituir os objetos globais.
+    documentos.clear()
+    documentos.update(deepcopy(documentos_salvos))
+
+    inventario.clear()
+    inventario.extend(deepcopy(inventario_salvo))
+
+    historico_entregas.clear()
+    historico_entregas.extend(deepcopy(historico_salvo))
+
+    print("Dados da investigação carregados com sucesso!")
+
+    return True
