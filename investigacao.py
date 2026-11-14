@@ -1,173 +1,255 @@
-from copy import deepcopy
 
-from personagens import personagens, alterar_confianca
+"""
+investigacao.py
+CyberQuest: O Protocolo ORÁCULO
+
+Responsabilidade:
+- Cadastrar os documentos do jogo.
+- Registrar documentos encontrados.
+- Consultar o inventário.
+- Entregar documentos aos personagens.
+- Consultar o histórico de entregas.
+
+IMPORTANTE:
+Todas as funções utilizam o mesmo estado_jogo.
+O salvamento é responsabilidade de salvamento.py.
+"""
+
+from personagens import personagens
 
 
-# ==========================================
-# DOCUMENTOS DO JOGO
-# ==========================================
+# ==========================================================
+# 1. CADASTRO DOS DOCUMENTOS
+# ==========================================================
 
-documentos = {
+DOCUMENTOS = {
 
-    "projeto_oraculo": {
-        "nome": "Projeto ORÁCULO",
-        "autor": "Dra. Karla",
+    "DOC01": {
+        "nome": "Relatório ORÁCULO",
+        "autor": "Não identificado",
         "classificacao": "Confidencial",
-        "encontrado": False,
-        "entregue": False,
-        "entregue_para": None
+        "ambiente": "Laboratório"
     },
 
-    "relatorio_seguranca": {
-        "nome": "Relatório de Segurança",
-        "autor": "Helena Voss",
+    "DOC02": {
+        "nome": "Registro de Acessos",
+        "autor": "Não identificado",
         "classificacao": "Confidencial",
-        "encontrado": False,
-        "entregue": False,
-        "entregue_para": None
+        "ambiente": "Sala de Segurança"
     },
 
-    "plano_contingencia": {
+    "DOC03": {
         "nome": "Plano de Contingência",
         "autor": "Dante Moreau",
         "classificacao": "Restrito",
-        "encontrado": False,
-        "entregue": False,
-        "entregue_para": None
+        "ambiente": "Sala de Planejamento"
     },
 
-    "documento_secreto": {
+    "DOC04": {
         "nome": "Documento Secreto",
         "autor": "ORÁCULO",
         "classificacao": "Ultrassecreto",
-        "encontrado": False,
-        "entregue": False,
-        "entregue_para": None
+        "ambiente": "Escritório de Dante"
     }
 
 }
 
 
-# ==========================================
-# INVENTÁRIO DO JOGADOR
-# ==========================================
+# ==========================================================
+# 2. VALIDAR ESTADO DO JOGO
+# ==========================================================
 
-inventario = []
+def validar_estado_jogo(estado_jogo):
 
-
-# ==========================================
-# HISTÓRICO DE ENTREGAS
-# ==========================================
-
-historico_entregas = []
-
-
-# ==========================================
-# ENCONTRAR DOCUMENTO
-# ==========================================
-
-def encontrar_documento(documento_id):
-
-    if documento_id not in documentos:
-        print("Documento não encontrado!")
+    if not isinstance(estado_jogo, dict):
         return False
 
-    dados = documentos[documento_id]
-
-    if dados["encontrado"]:
-        print("Você já encontrou este documento!")
+    if "documentos_encontrados" not in estado_jogo:
         return False
 
-    dados["encontrado"] = True
+    if "documentos_entregues" not in estado_jogo:
+        return False
 
-    inventario.append(documento_id)
+    if not isinstance(estado_jogo["documentos_encontrados"], list):
+        return False
 
-    print("\nDocumento encontrado!")
-    print(f"Nome: {dados['nome']}")
-    print(f"Autor: {dados['autor']}")
-    print(f"Classificação: {dados['classificacao']}")
+    if not isinstance(estado_jogo["documentos_entregues"], list):
+        return False
 
     return True
 
 
-# ==========================================
-# EXIBIR INVENTÁRIO
-# ==========================================
+# ==========================================================
+# 3. LISTAR DOCUMENTOS DE UM AMBIENTE
+# ==========================================================
 
-def exibir_inventario():
+def listar_documentos(nome_ambiente):
 
-    print("\n========== INVENTÁRIO ==========")
+    documentos_ambiente = []
 
-    if not inventario:
-        print("Seu inventário está vazio!")
-        print("\n================================")
-        return
+    for codigo, dados in DOCUMENTOS.items():
 
-    for numero, documento_id in enumerate(inventario, start=1):
+        if dados["ambiente"] == nome_ambiente:
 
-        dados = documentos[documento_id]
+            documento = {
+                "codigo": codigo,
+                "nome": dados["nome"],
+                "autor": dados["autor"],
+                "classificacao": dados["classificacao"]
+            }
 
-        print(f"\n{numero}. {dados['nome']}")
-        print(f"   Autor: {dados['autor']}")
-        print(f"   Classificação: {dados['classificacao']}")
+            documentos_ambiente.append(documento)
 
-        if dados["entregue"]:
-            print(f"   Status: Entregue para {dados['entregue_para']}")
-
-        else:
-            print("   Status: Disponível")
-
-    print("\n================================")
+    return documentos_ambiente
 
 
-# ==========================================
-# CONSULTAR DOCUMENTO
-# ==========================================
+# ==========================================================
+# 4. VERIFICAR SE UM DOCUMENTO FOI ENCONTRADO
+# ==========================================================
 
-def consultar_documento():
+def verificar_documento_encontrado(estado_jogo, codigo):
 
-    if not inventario:
-        print("Não existem documentos no inventário!")
-        return
+    if not validar_estado_jogo(estado_jogo):
+        return False
 
-    exibir_inventario()
-
-    try:
-        escolha = int(input("\nDigite o número do documento: "))
-
-    except ValueError:
-        print("Digite um número válido!")
-        return
-
-    if escolha < 1 or escolha > len(inventario):
-        print("Opção inválida!")
-        return
-
-    documento_id = inventario[escolha - 1]
-
-    dados = documentos[documento_id]
-
-    print("\n======= DETALHES DO DOCUMENTO =======")
-    print(f"Nome: {dados['nome']}")
-    print(f"Autor: {dados['autor']}")
-    print(f"Classificação: {dados['classificacao']}")
-
-    if dados["entregue"]:
-        print(f"Entregue para: {dados['entregue_para']}")
-
-    else:
-        print("Este documento ainda não foi entregue.")
-
-    print("=====================================")
+    return codigo in estado_jogo["documentos_encontrados"]
 
 
-# ==========================================
-# LISTAR DESTINATÁRIOS
-# ==========================================
+# ==========================================================
+# 5. VERIFICAR SE UM DOCUMENTO FOI ENTREGUE
+# ==========================================================
+
+def verificar_documento_entregue(estado_jogo, codigo):
+
+    if not validar_estado_jogo(estado_jogo):
+        return False
+
+    for entrega in estado_jogo["documentos_entregues"]:
+
+        # Compatibilidade caso o registro seja somente o código.
+        if entrega == codigo:
+            return True
+
+        if isinstance(entrega, dict):
+
+            if entrega.get("codigo") == codigo:
+                return True
+
+    return False
+
+
+# ==========================================================
+# 6. ENCONTRAR DOCUMENTO
+# ==========================================================
+
+def encontrar_documento(estado_jogo, codigo):
+
+    if not validar_estado_jogo(estado_jogo):
+        return False
+
+    if codigo not in DOCUMENTOS:
+        return False
+
+    if verificar_documento_encontrado(estado_jogo, codigo):
+        return False
+
+    estado_jogo["documentos_encontrados"].append(codigo)
+
+    return True
+
+
+# ==========================================================
+# 7. OBTER INVENTÁRIO
+# ==========================================================
+
+def obter_inventario(estado_jogo):
+
+    if not validar_estado_jogo(estado_jogo):
+        return []
+
+    inventario = []
+
+    for codigo in estado_jogo["documentos_encontrados"]:
+
+        if codigo not in DOCUMENTOS:
+            continue
+
+        dados = DOCUMENTOS[codigo]
+
+        documento = {
+            "codigo": codigo,
+            "nome": dados["nome"],
+            "autor": dados["autor"],
+            "classificacao": dados["classificacao"],
+            "entregue": verificar_documento_entregue(
+                estado_jogo, codigo
+            ),
+            "entregue_para": None
+        }
+
+        # Consulta o destinatário, caso já tenha ocorrido uma entrega.
+        for entrega in estado_jogo["documentos_entregues"]:
+
+            if isinstance(entrega, dict):
+
+                if entrega.get("codigo") == codigo:
+                    documento["entregue_para"] = entrega.get(
+                        "nome_personagem"
+                    )
+
+        inventario.append(documento)
+
+    return inventario
+
+
+# ==========================================================
+# 8. CONSULTAR DOCUMENTO
+# ==========================================================
+
+def consultar_documento(estado_jogo, codigo):
+
+    if not validar_estado_jogo(estado_jogo):
+        return None
+
+    if codigo not in DOCUMENTOS:
+        return None
+
+    if not verificar_documento_encontrado(estado_jogo, codigo):
+        return None
+
+    dados = DOCUMENTOS[codigo]
+
+    documento = {
+        "codigo": codigo,
+        "nome": dados["nome"],
+        "autor": dados["autor"],
+        "classificacao": dados["classificacao"],
+        "ambiente": dados["ambiente"],
+        "entregue": verificar_documento_entregue(
+            estado_jogo, codigo
+        ),
+        "entregue_para": None
+    }
+
+    for entrega in estado_jogo["documentos_entregues"]:
+
+        if isinstance(entrega, dict):
+
+            if entrega.get("codigo") == codigo:
+                documento["entregue_para"] = entrega.get(
+                    "nome_personagem"
+                )
+
+    return documento
+
+
+# ==========================================================
+# 9. LISTAR DESTINATÁRIOS
+# ==========================================================
 
 def listar_destinatarios():
 
-    print("\n======= PERSONAGENS =======")
+    destinatarios = []
 
     for personagem_id, dados in personagens.items():
 
@@ -175,166 +257,90 @@ def listar_destinatarios():
         if personagem_id == "alex":
             continue
 
-        print(f"- {dados['nome']}")
+        destinatarios.append({
+            "id": personagem_id,
+            "nome": dados["nome"]
+        })
+
+    return destinatarios
 
 
-# ==========================================
-# ENTREGAR DOCUMENTO
-# ==========================================
+# ==========================================================
+# 10. ENTREGAR DOCUMENTO
+# ==========================================================
 
-def entregar_documento():
+def entregar_documento(estado_jogo, codigo, personagem):
 
-    if not inventario:
-        print("Você não possui documentos para entregar!")
-        return
+    if not validar_estado_jogo(estado_jogo):
+        return False
 
-    exibir_inventario()
+    if codigo not in DOCUMENTOS:
+        return False
 
-    try:
-        escolha = int(input("\nQual documento deseja entregar? "))
+    # Verifica se o jogador encontrou o documento.
+    if not verificar_documento_encontrado(estado_jogo, codigo):
+        return False
 
-    except ValueError:
-        print("Digite um número válido!")
-        return
+    # Impede que o documento seja entregue novamente.
+    if verificar_documento_entregue(estado_jogo, codigo):
+        return False
 
-    if escolha < 1 or escolha > len(inventario):
-        print("Documento inválido!")
-        return
+    # Normaliza o identificador do personagem.
+    if not isinstance(personagem, str):
+        return False
 
-    documento_id = inventario[escolha - 1]
+    personagem = personagem.strip().lower()
 
-    dados = documentos[documento_id]
+    # Verifica se o personagem existe.
+    if personagem not in personagens:
+        return False
 
-    if dados["entregue"]:
-        print("Este documento já foi entregue!")
-        return
-
-    listar_destinatarios()
-
-    personagem = input(
-        "\nPara quem deseja entregar? "
-    ).lower().strip()
-
-    # Verifica se o personagem existe no cadastro oficial.
-    if personagem not in personagens or personagem == "alex":
-        print("Personagem inválido!")
-        return
+    # Alex não pode receber documentos.
+    if personagem == "alex":
+        return False
 
     nome_personagem = personagens[personagem]["nome"]
 
-    confirmacao = input(
-        f"\nDeseja entregar '{dados['nome']}' "
-        f"para {nome_personagem}? (s/n): "
-    ).lower().strip()
-
-    if confirmacao != "s":
-        print("Entrega cancelada!")
-        return
-
-    # Atualiza os dados do documento.
-    dados["entregue"] = True
-    dados["entregue_para"] = nome_personagem
-
-    # Registra a entrega no histórico.
-    historico_entregas.append({
-        "documento": documento_id,
+    # Registra a entrega no estado compartilhado.
+    registro = {
+        "codigo": codigo,
+        "documento": DOCUMENTOS[codigo]["nome"],
         "personagem": personagem,
         "nome_personagem": nome_personagem
-    })
-
-    print("\nDocumento entregue com sucesso!")
-    print(f"Documento: {dados['nome']}")
-    print(f"Destinatário: {nome_personagem}")
-
-
-# ==========================================
-# ALTERAR CONFIANÇA APÓS UMA DECISÃO
-# ==========================================
-
-def aplicar_impacto_confianca(personagem, valor, capitulo):
-
-    if personagem not in personagens or personagem == "alex":
-        print("Personagem inválido!")
-        return False
-
-    # Utiliza a função que já existe em personagens.py.
-    return alterar_confianca(personagem, valor, capitulo)
-
-
-# ==========================================
-# CONSULTAR HISTÓRICO DE ENTREGAS
-# ==========================================
-
-def consultar_historico_entregas():
-
-    print("\n======= HISTÓRICO DE ENTREGAS =======")
-
-    if not historico_entregas:
-        print("Nenhuma entrega foi realizada.")
-        print("=====================================")
-        return
-
-    for numero, registro in enumerate(historico_entregas, start=1):
-
-        dados = documentos[registro["documento"]]
-
-        print(f"\n{numero}. Documento: {dados['nome']}")
-        print(f"   Destinatário: {registro['nome_personagem']}")
-
-    print("\n=====================================")
-
-
-# ==========================================
-# PREPARAR DADOS PARA SALVAMENTO JSON
-# ==========================================
-
-def obter_estado_investigacao():
-
-    estado = {
-        "documentos": deepcopy(documentos),
-        "inventario": deepcopy(inventario),
-        "historico_entregas": deepcopy(historico_entregas)
     }
 
-    return estado
-
-
-# ==========================================
-# RESTAURAR DADOS DA INVESTIGAÇÃO
-# ==========================================
-
-def carregar_estado_investigacao(estado):
-
-    if not isinstance(estado, dict):
-        print("Estado de investigação inválido!")
-        return False
-
-    documentos_salvos = estado.get("documentos")
-    inventario_salvo = estado.get("inventario")
-    historico_salvo = estado.get("historico_entregas")
-
-    if not isinstance(documentos_salvos, dict):
-        print("Dados dos documentos inválidos!")
-        return False
-
-    if not isinstance(inventario_salvo, list):
-        print("Dados do inventário inválidos!")
-        return False
-
-    if not isinstance(historico_salvo, list):
-        print("Histórico de entregas inválido!")
-        return False
-
-    # Atualiza os dados sem substituir os objetos globais.
-    documentos.clear()
-    documentos.update(deepcopy(documentos_salvos))
-
-    inventario.clear()
-    inventario.extend(deepcopy(inventario_salvo))
-
-    historico_entregas.clear()
-    historico_entregas.extend(deepcopy(historico_salvo))
-
-    print("Dados da investigação carregados com sucesso!")
+    estado_jogo["documentos_entregues"].append(registro)
 
     return True
+
+
+# ==========================================================
+# 11. CONSULTAR HISTÓRICO DE ENTREGAS
+# ==========================================================
+
+def consultar_historico_entregas(estado_jogo):
+
+    if not validar_estado_jogo(estado_jogo):
+        return []
+
+    historico = []
+
+    for entrega in estado_jogo["documentos_entregues"]:
+
+        if isinstance(entrega, dict):
+
+            historico.append(entrega.copy())
+
+        elif isinstance(entrega, str):
+
+            # Compatibilidade com registros antigos contendo somente IDs.
+            if entrega in DOCUMENTOS:
+
+                historico.append({
+                    "codigo": entrega,
+                    "documento": DOCUMENTOS[entrega]["nome"],
+                    "personagem": None,
+                    "nome_personagem": "Não identificado"
+                })
+
+    return historico
