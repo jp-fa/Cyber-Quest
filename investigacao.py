@@ -147,6 +147,11 @@ def encontrar_documento(estado_jogo, codigo):
     if not validar_estado_jogo(estado_jogo):
         return False
 
+    if not isinstance(codigo, str):
+        return False
+
+    codigo = codigo.strip().upper()
+
     if codigo not in DOCUMENTOS:
         return False
 
@@ -211,6 +216,11 @@ def consultar_documento(estado_jogo, codigo):
     if not validar_estado_jogo(estado_jogo):
         return None
 
+    if not isinstance(codigo, str):
+        return None
+
+    codigo = codigo.strip().upper()
+
     if codigo not in DOCUMENTOS:
         return None
 
@@ -251,16 +261,14 @@ def listar_destinatarios():
 
     destinatarios = []
 
-    for personagem_id, dados in personagens.items():
+    for id_personagem, dados in personagens.items():
 
-        # Alex é o protagonista e não recebe documentos.
-        if personagem_id == "alex":
-            continue
+        if id_personagem not in ("alex", "oraculo"):
 
-        destinatarios.append({
-            "id": personagem_id,
-            "nome": dados["nome"]
-        })
+            destinatarios.append({
+                "id": id_personagem,
+                "nome": dados["nome"]
+            })
 
     return destinatarios
 
@@ -273,6 +281,12 @@ def entregar_documento(estado_jogo, codigo, personagem):
 
     if not validar_estado_jogo(estado_jogo):
         return False
+
+    # Normaliza o código do documento.
+    if not isinstance(codigo, str):
+        return False
+
+    codigo = codigo.strip().upper()
 
     if codigo not in DOCUMENTOS:
         return False
@@ -295,8 +309,8 @@ def entregar_documento(estado_jogo, codigo, personagem):
     if personagem not in personagens:
         return False
 
-    # Alex não pode receber documentos.
-    if personagem == "alex":
+    # Alex e ORÁCULO não podem receber documentos.
+    if personagem in ("alex", "oraculo"):
         return False
 
     nome_personagem = personagens[personagem]["nome"]
