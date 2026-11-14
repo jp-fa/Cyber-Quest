@@ -7,86 +7,83 @@ personagens = {
     "alex": {
         "nome": "Alex",
         "cargo": "Hacker",
-        "idade": 28,
-        "confianca": "Indefinida"
+        "idade": 28
     },
 
     "helena": {
         "nome": "Helena Voss",
         "cargo": "Diretora da NEXUS",
-        "idade": 30,
-        "confianca": 30
+        "idade": 30
     },
 
     "karla": {
         "nome": "Dra. Karla",
         "cargo": "Cientista",
-        "idade": 32,
-        "confianca": 50
+        "idade": 32
     },
 
     "dante": {
         "nome": "Dante Moreau",
         "cargo": "Aliado",
-        "idade": 29,
-        "confianca": 40
+        "idade": 29
     },
 
     "oraculo": {
         "nome": "ORÁCULO",
         "cargo": "Inteligência Artificial",
-        "idade": 3,
-        "confianca": 0
+        "idade": 3
     }
 
 }
 
 
 # ==========================================
-# CAPÍTULOS DO JOGO
+# RELAÇÃO ENTRE PERSONAGENS E CONFIANÇA
 # ==========================================
 
-capitulos_validos = [
-    "capitulo_1",
-    "capitulo_2",
-    "capitulo_3"
-]
-
-
-# ==========================================
-# PERSONAGENS ABORDADOS
-# ==========================================
-
-personagens_abordados = {
-
-    "capitulo_1": [],
-    "capitulo_2": [],
-    "capitulo_3": []
-
+nomes_confianca = {
+    "helena": "Helena",
+    "karla": "Karla",
+    "dante": "Dante"
 }
 
 
 # ==========================================
-# HISTÓRICO DE CONFIANÇA
+# VALIDAR ESTADO DO JOGO
 # ==========================================
 
-historico_confianca = {
+def validar_estado_jogo(estado_jogo):
 
-    "capitulo_1": [],
-    "capitulo_2": [],
-    "capitulo_3": []
+    if not isinstance(estado_jogo, dict):
+        return False
 
-}
+    campos = [
+        "capitulo_atual",
+        "personagens_abordados",
+        "confianca",
+        "escolhas_confianca"
+    ]
+
+    for campo in campos:
+
+        if campo not in estado_jogo:
+            return False
+
+    return True
 
 
 # ==========================================
 # EXIBIR UM PERSONAGEM
 # ==========================================
 
-def exibir_personagem(personagem):
+def exibir_personagem(personagem, estado_jogo):
 
     if personagem not in personagens:
         print("Personagem não encontrado!")
+        return False
+
+    if not validar_estado_jogo(estado_jogo):
+        print("Estado do jogo inválido!")
         return False
 
     dados = personagens[personagem]
@@ -96,10 +93,21 @@ def exibir_personagem(personagem):
     print(f"Cargo: {dados['cargo']}")
     print(f"Idade: {dados['idade']}")
 
-    if isinstance(dados["confianca"], int):
-        print(f"Confiança: {dados['confianca']}/100")
+    if personagem in nomes_confianca:
+
+        nome = nomes_confianca[personagem]
+
+        confianca = estado_jogo["confianca"][nome]
+
+        print(f"Confiança: {confianca.title()}")
+
+    elif personagem == "alex":
+
+        print("Confiança: Indefinida")
+
     else:
-        print(f"Confiança: {dados['confianca']}")
+
+        print("Confiança: Não aplicável")
 
     print("=========================================")
 
@@ -114,7 +122,7 @@ def listar_personagens():
 
     print("\n======= PERSONAGENS =======")
 
-    for personagem_id, dados in personagens.items():
+    for dados in personagens.values():
 
         print(f"- {dados['nome']}")
 
@@ -125,100 +133,142 @@ def listar_personagens():
 # CONSULTAR PERSONAGEM
 # ==========================================
 
-def consultar_personagem():
+def consultar_personagem(personagem, estado_jogo):
 
-    listar_personagens()
-
-    personagem = input(
-        "\nDigite o nome do personagem: "
-    ).lower().strip()
-
-    if personagem not in personagens:
-        print("Personagem não encontrado!")
-        return False
-
-    return exibir_personagem(personagem)
+    return exibir_personagem(personagem, estado_jogo)
 
 
 # ==========================================
 # ABORDAR PERSONAGEM
 # ==========================================
 
-def abordar_personagem(personagem, capitulo):
+def abordar_personagem(estado_jogo, personagem):
+
+    if not validar_estado_jogo(estado_jogo):
+        print("Estado do jogo inválido!")
+        return False
 
     if personagem not in personagens:
         print("Personagem não encontrado!")
-        return False
-
-    if capitulo not in capitulos_validos:
-        print("Capítulo inválido!")
         return False
 
     if personagem == "alex":
         print("Alex é o protagonista e não pode ser abordado.")
         return False
 
-    if personagem in personagens_abordados[capitulo]:
+    capitulo = str(estado_jogo["capitulo_atual"])
+
+    if capitulo not in ("1", "2", "3"):
+        print("Capítulo inválido!")
+        return False
+
+    abordados = estado_jogo["personagens_abordados"]
+
+    if capitulo not in abordados:
+        print("Capítulo não encontrado no estado do jogo!")
+        return False
+
+    if personagem in abordados[capitulo]:
+
         print("Você já abordou este personagem neste capítulo!")
         return False
 
-    personagens_abordados[capitulo].append(personagem)
+    abordados[capitulo].append(personagem)
 
-    print(f"\nVocê abordou {personagens[personagem]['nome']}.")
+    print(
+        f"\nVocê abordou {personagens[personagem]['nome']}."
+    )
 
     return True
 
 
 # ==========================================
-# ALTERAR CONFIANÇA
+# CALCULAR NÍVEL DE CONFIANÇA
 # ==========================================
 
-def alterar_confianca(personagem, valor, capitulo):
+def calcular_nivel_confianca(escolhas):
 
-    if personagem not in personagens:
-        print("Personagem não encontrado!")
+    saldo = 0
+
+    for escolha in escolhas:
+
+        saldo += escolha["impacto"]
+
+    if saldo > 0:
+        return "alta"
+
+    elif saldo < 0:
+        return "baixa"
+
+    else:
+        return "neutra"
+
+
+# ==========================================
+# REGISTRAR ESCOLHA DE CONFIANÇA
+# ==========================================
+
+def registrar_escolha_confianca(
+    estado_jogo,
+    personagem,
+    escolha
+):
+
+    if not validar_estado_jogo(estado_jogo):
+        print("Estado do jogo inválido!")
         return False
 
-    if personagem == "alex":
-        print("A confiança de Alex não pode ser alterada.")
+    if personagem not in nomes_confianca:
+        print("Este personagem não possui confiança configurada.")
         return False
 
-    if capitulo not in capitulos_validos:
-        print("Capítulo inválido!")
+    escolha = str(escolha).lower().strip()
+
+    if escolha not in ("positiva", "negativa"):
+        print("Escolha de confiança inválida!")
         return False
 
-    dados = personagens[personagem]
+    nome = nomes_confianca[personagem]
 
-    if not isinstance(dados["confianca"], int):
-        print("A confiança deste personagem não pode ser alterada.")
+    historico = estado_jogo["escolhas_confianca"]
+
+    if nome not in historico:
+        print("Personagem não encontrado no histórico de confiança!")
         return False
 
-    if not isinstance(valor, (int, float)) or isinstance(valor, bool):
-        print("O valor da alteração precisa ser numérico!")
-        return False
+    capitulo = estado_jogo["capitulo_atual"]
 
-    confianca_anterior = dados["confianca"]
+    # Impede registrar duas escolhas para o mesmo personagem
+    # no mesmo capítulo.
+    for registro in historico[nome]:
 
-    nova_confianca = confianca_anterior + valor
+        if registro["capitulo"] == capitulo:
+            print("A confiança deste personagem já foi alterada neste capítulo!")
+            return False
 
-    # Impede confiança abaixo de 0 ou acima de 100.
-    nova_confianca = max(0, min(100, nova_confianca))
+    confianca_anterior = estado_jogo["confianca"][nome]
 
-    dados["confianca"] = nova_confianca
+    if escolha == "positiva":
+        impacto = 1
 
-    diferenca = nova_confianca - confianca_anterior
+    else:
+        impacto = -1
 
-    historico_confianca[capitulo].append({
+    historico[nome].append({
 
-        "personagem": personagem,
-        "nome": dados["nome"],
-        "confianca_anterior": confianca_anterior,
-        "confianca_atual": nova_confianca,
-        "alteracao": diferenca
+        "capitulo": capitulo,
+        "escolha": escolha,
+        "impacto": impacto
 
     })
 
-    print(f"\nConfiança de {dados['nome']} atualizada!")
+    nova_confianca = calcular_nivel_confianca(
+        historico[nome]
+    )
+
+    estado_jogo["confianca"][nome] = nova_confianca
+
+    print(f"\nConfiança de {nome} atualizada!")
     print(f"Confiança anterior: {confianca_anterior}")
     print(f"Confiança atual: {nova_confianca}")
 
@@ -229,32 +279,34 @@ def alterar_confianca(personagem, valor, capitulo):
 # CONSULTAR CONFIANÇA
 # ==========================================
 
-def consultar_confianca(personagem):
+def consultar_confianca(estado_jogo, personagem):
 
-    if personagem not in personagens:
-        print("Personagem não encontrado!")
+    if not validar_estado_jogo(estado_jogo):
+        print("Estado do jogo inválido!")
         return False
 
-    dados = personagens[personagem]
-    confianca = dados["confianca"]
+    if personagem not in nomes_confianca:
+        print("Personagem não encontrado ou sem confiança configurada!")
+        return False
 
-    print(f"\n======= CONFIANÇA: {dados['nome']} =======")
+    nome = nomes_confianca[personagem]
 
-    if not isinstance(confianca, int):
-        print(f"Confiança: {confianca}")
-        print("=========================================")
-        return True
+    confianca = estado_jogo["confianca"][nome]
 
-    print(f"Pontuação: {confianca}/100")
+    print(f"\n======= CONFIANÇA: {nome} =======")
+    print(f"Nível: {confianca.title()}")
 
-    if confianca >= 70:
-        print("Nível: Alta confiança")
+    if confianca == "alta":
 
-    elif confianca >= 40:
-        print("Nível: Confiança moderada")
+        print("Este personagem demonstra maior confiança em Alex.")
+
+    elif confianca == "neutra":
+
+        print("A relação com Alex permanece equilibrada.")
 
     else:
-        print("Nível: Baixa confiança")
+
+        print("Este personagem demonstra pouca confiança em Alex.")
 
     print("=========================================")
 
@@ -265,39 +317,44 @@ def consultar_confianca(personagem):
 # CONSULTAR HISTÓRICO DE CONFIANÇA
 # ==========================================
 
-def consultar_historico_confianca(capitulo):
+def consultar_historico_confianca(
+    estado_jogo,
+    personagem
+):
 
-    if capitulo not in capitulos_validos:
-        print("Capítulo inválido!")
+    if not validar_estado_jogo(estado_jogo):
+        print("Estado do jogo inválido!")
         return False
 
-    historico = historico_confianca[capitulo]
+    if personagem not in nomes_confianca:
+        print("Personagem não encontrado!")
+        return False
+
+    nome = nomes_confianca[personagem]
+
+    historico = estado_jogo["escolhas_confianca"][nome]
 
     print(
-        f"\n======= HISTÓRICO DE CONFIANÇA: "
-        f"{capitulo.replace('_', ' ').title()} ======="
+        f"\n======= HISTÓRICO DE CONFIANÇA: {nome} ======="
     )
 
     if not historico:
+
         print("Nenhuma alteração de confiança registrada.")
         print("=========================================")
+
         return True
 
     for numero, registro in enumerate(historico, start=1):
 
-        print(f"\n{numero}. {registro['nome']}")
-        print(
-            f"   Confiança anterior: "
-            f"{registro['confianca_anterior']}"
-        )
-        print(
-            f"   Confiança atual: "
-            f"{registro['confianca_atual']}"
-        )
-        print(
-            f"   Alteração: "
-            f"{registro['alteracao']:+}"
-        )
+        print(f"\n{numero}. Capítulo {registro['capitulo']}")
+        print(f"Escolha: {registro['escolha']}")
+
+        if registro["impacto"] > 0:
+            print("Impacto: +1")
+
+        else:
+            print("Impacto: -1")
 
     print("\n=========================================")
 
