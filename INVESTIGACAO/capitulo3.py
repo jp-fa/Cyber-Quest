@@ -10,12 +10,12 @@ Responsabilidade:
 - Consultar as informações do documento.
 """
 
-from personagens import (
+from INVESTIGACAO.personagens import (
     abordar_personagem,
     registrar_escolha_confianca
 )
 
-from investigacao import (
+from INVESTIGACAO.investigacao import (
     encontrar_documento,
     consultar_documento
 )

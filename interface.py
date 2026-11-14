@@ -1,14 +1,14 @@
 # =========================================================
 # ARQUIVO: interface.py (Sua Interface Cyberpunk no Tkinter)
 # =========================================================
-import investigacao; print("---> FICHEIRO QUE ESTÁ A SER LIDO:", investigacao.__file__)
+import INVESTIGACAO.investigacao as investigacao; print("---> FICHEIRO QUE ESTÁ A SER LIDO:", investigacao.__file__)
 
 import tkinter as tk
 from tkinter import simpledialog
 
 # Importando os arquivos dos seus colegas
 import historia
-import investigacao
+import INVESTIGACAO.investigacao as investigacao
 
 
 

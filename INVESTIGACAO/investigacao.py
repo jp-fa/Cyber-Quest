@@ -23,7 +23,7 @@ O salvamento é responsabilidade de salvamento.py.
 >>>>>>> investigacao
 """
 
-from personagens import personagens
+from INVESTIGACAO.personagens import personagens
 
 
 <<<<<<< HEAD
