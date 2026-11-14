@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import simpledialog
 
 # Importando os arquivos dos seus colegas
-import historia
+import HISTORIA.historia as historia
 import INVESTIGACAO.investigacao as investigacao
 
 
