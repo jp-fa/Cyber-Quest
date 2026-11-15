@@ -4,9 +4,10 @@ Responsável: Integrante 4 (Sistemas e Persistência)
 
 O QUE ESTE MÓDULO FAZ
     Cria o estado inicial do jogo, salva o progresso em JSON, carrega o
-    progresso e apaga o progresso. Não tem história, menus nem regras de jogo.
+    progresso e apaga o progresso. É o ÚNICO módulo que acessa os arquivos JSON.
+    Não tem história, menus nem regras de jogo.
 
-FUNÇÕES (nomes combinados no roteiro)
+FUNÇÕES PÚBLICAS
     criar_estado_inicial()      -> dict   estado de uma partida nova
     salvar_jogo(estado_jogo)    -> bool   True se salvou, False se deu erro
     carregar_jogo()             -> (estado_jogo, None)  se deu certo
@@ -14,17 +15,18 @@ FUNÇÕES (nomes combinados no roteiro)
     excluir_progresso()         -> bool   True se apagou o save, False se não havia
 
 REGRA DO SALVAMENTO AUTOMÁTICO: "mudou o estado, salvou"
-    salvar_jogo NÃO roda sozinha. Quem chama é o main.py (integrante 3),
-    logo depois de cada mudança relevante no estado_jogo:
+    salvar_jogo NÃO roda sozinha. Quem chama é o main.py, logo depois de cada
+    mudança relevante no estado_jogo:
 
-    | Evento                            | Quem altera o estado |
-    |-----------------------------------|----------------------|
-    | Entrar ou sair de um ambiente     | ambientes.py         |
-    | Abordar um personagem             | personagens.py       |
-    | Registrar escolha de confiança    | personagens.py       |
-    | Encontrar ou entregar documento   | investigacao.py      |
-    | Avançar capítulo                  | historia.py          |
-    | Registrar decisão final           | historia.py          |
+    | Evento                                  | Quem altera o estado |
+    |-----------------------------------------|----------------------|
+    | Entrar ou sair de um ambiente           | ambientes.py         |
+    | Registrar ação dentro de um ambiente    | ambientes.py         |
+    | Abordar um personagem                   | personagens.py       |
+    | Alterar a confiança de um personagem   | personagens.py       |
+    | Encontrar ou entregar documento         | investigacao.py      |
+    | Registrar decisão, avançar capítulo     | historia.py          |
+    | Registrar decisão final / final         | historia.py          |
 
     Exemplo de uso no main.py:
 
@@ -44,55 +46,79 @@ ARQUIVO_TEMPORARIO = ARQUIVO + ".tmp"
 
 # Versão do formato do save. Se as chaves do estado_jogo mudarem, aumentar este
 # número: saves antigos serão recusados com um aviso, em vez de quebrar o jogo.
-VERSAO_SAVE = 1
+VERSAO_SAVE = 2
 
-# Chaves do estado_jogo (seção 11 do roteiro) e o tipo esperado de cada uma.
-# "object" = aceita qualquer valor (o grupo ainda vai definir o formato).
+# Chaves do estado_jogo (contrato do Prompt 1) e o tipo esperado de cada uma.
+# "object" = aceita qualquer valor (o formato ainda pode variar).
 TIPOS_CAMPOS = {
     "capitulo_atual": int,
     "ambiente_atual": (str, type(None)),
     "ambientes_visitados": list,
     "ambientes_estado": dict,
-    "documentos_encontrados": list,
-    "documentos_entregues": list,
     "personagens_abordados": dict,
     "confianca": dict,
     "escolhas_confianca": dict,
+    "documentos_encontrados": list,
+    "documentos_entregues": list,
+    "historico_entregas": list,
+    "decisoes": dict,
     "decisao_final": object,
     "final": object,
+    "cena_atual": object,
+    "jogo_concluido": bool,
 }
 CAMPOS_OBRIGATORIOS = list(TIPOS_CAMPOS)
 
+# Personagens que precisam ter confiança numérica (0 a 100) no estado.
+PERSONAGENS_COM_CONFIANCA = ("helena", "karla", "dante", "oraculo")
+
 
 def criar_estado_inicial():
-    """Devolve um estado_jogo novo, exatamente como no contrato do roteiro."""
+    """Devolve um estado_jogo novo, exatamente como no contrato do Prompt 1."""
     # Cada chamada cria dicionários e listas NOVOS (nada é compartilhado entre partidas).
     return {
         "capitulo_atual": 1,
         "ambiente_atual": None,
         "ambientes_visitados": [],
         "ambientes_estado": {},
-        "documentos_encontrados": [],
-        "documentos_entregues": [],
+
         # Chaves em TEXTO ("1", "2", "3"): o JSON só aceita texto como chave.
         "personagens_abordados": {
             "1": [],
             "2": [],
             "3": [],
         },
+
+        # Confiança NUMÉRICA de 0 a 100. Alex não tem pontuação.
         "confianca": {
-            "Helena": "neutra",
-            "Karla": "neutra",
-            "Dante": "neutra",
+            "helena": 30,
+            "karla": 50,
+            "dante": 40,
+            "oraculo": 0,
         },
         "escolhas_confianca": {
-            "Helena": [],
-            "Karla": [],
-            "Dante": [],
+            "helena": [],
+            "karla": [],
+            "dante": [],
+            "oraculo": [],
         },
+
+        "documentos_encontrados": [],
+        "documentos_entregues": [],
+        "historico_entregas": [],
+
+        "decisoes": {},
         "decisao_final": None,
         "final": None,
+
+        "cena_atual": None,
+        "jogo_concluido": False,
     }
+
+
+def _numero_valido(valor):
+    """True se for número (int ou float). bool NÃO conta, mesmo sendo int no Python."""
+    return isinstance(valor, (int, float)) and not isinstance(valor, bool)
 
 
 def _validar_estado(estado):
@@ -112,8 +138,26 @@ def _validar_estado(estado):
         if not isinstance(estado[campo], tipo):
             return f"O campo '{campo}' tem um tipo inválido."
 
-    if estado["capitulo_atual"] not in (1, 2, 3):
+    # Capítulo: inteiro de verdade (True/False também são int no Python).
+    if isinstance(estado["capitulo_atual"], bool) or estado["capitulo_atual"] not in (1, 2, 3):
         return "O capítulo salvo é inválido."
+
+    # Abordagens: uma lista por capítulo, com chave em texto.
+    for capitulo in ("1", "2", "3"):
+        if not isinstance(estado["personagens_abordados"].get(capitulo), list):
+            return f"As abordagens do capítulo {capitulo} estão ausentes ou inválidas."
+
+    # Confiança: numérica, de 0 a 100, para cada personagem do contrato.
+    for personagem in PERSONAGENS_COM_CONFIANCA:
+        if personagem not in estado["confianca"]:
+            return f"Falta a confiança de '{personagem}'."
+        pontos = estado["confianca"][personagem]
+        if not _numero_valido(pontos):
+            return f"A confiança de '{personagem}' precisa ser numérica."
+        if not 0 <= pontos <= 100:
+            return f"A confiança de '{personagem}' precisa estar entre 0 e 100."
+        if not isinstance(estado["escolhas_confianca"].get(personagem), list):
+            return f"O histórico de confiança de '{personagem}' está ausente ou inválido."
 
     return None
 
@@ -145,7 +189,7 @@ def salvar_jogo(estado_jogo):
 
         # 2) Escreve tudo em um arquivo temporário.
         with open(ARQUIVO_TEMPORARIO, "w", encoding="utf-8") as arquivo:
-            json.dump(conteudo, arquivo, ensure_ascii=False, indent=2)
+            json.dump(conteudo, arquivo, ensure_ascii=False, indent=2)  # mantém acentos
             arquivo.flush()
             os.fsync(arquivo.fileno())  # garante que foi para o disco
 
@@ -164,7 +208,7 @@ def salvar_jogo(estado_jogo):
 def carregar_jogo():
     """
     Lê o save e devolve uma tupla (estado_jogo, mensagem_de_erro):
-      - deu certo:  (estado_jogo, None)
+      - deu certo:  (estado_jogo, None)   -> o estado COMPLETO, sem descartar nada
       - deu errado: (None, "texto explicando o problema")
     """
     if not os.path.exists(ARQUIVO):
