@@ -25,18 +25,31 @@ CONVENÇÃO DO GRUPO
 
 IMPORTANTE: este módulo NÃO importa historia.py nem personagens.py
     (evita import circular). Quem coordena os módulos é o main.py.
+
+FUNÇÕES PÚBLICAS
+    listar_ambientes(estado_jogo)                 -> lista de nomes disponíveis no capítulo
+    entrar_ambiente(estado_jogo, nome)            -> bool
+    sair_ambiente(estado_jogo)                    -> bool
+    verificar_ambiente_visitado(estado_jogo, nome)-> bool
+    obter_personagens_ambiente(nome)              -> lista de ids (ex.: ["karla", "oraculo"])
+    motivo_bloqueio_entrada(estado_jogo, nome)    -> texto do motivo, ou None se pode entrar
+    registrar_acao_ambiente(estado_jogo, acao)    -> bool
+    acao_ja_realizada(estado_jogo, acao)          -> bool
 """
 
 # ------------------------------------------------------------------
-# CADASTRO DOS AMBIENTES (dados vindos do roteiro, seção 6)
+# CADASTRO DOS AMBIENTES (nomes e capítulos oficiais do Prompt 1)
 # Os nomes precisam ser IDÊNTICOS (acentos incluídos) aos usados em
 # historia.obter_ambientes_capitulo, senão o capítulo nunca avança.
-# "acoes" e "documento": formato a confirmar com os integrantes 2 e 3.
+# "personagens": ids OFICIAIS em minúsculas (os mesmos de personagens.py),
+#                podem ser passados direto para personagens.abordar_personagem.
+# "documento": código oficial (DOC01 a DOC04), o mesmo de investigacao.py.
+# "acoes": ids das ações da sala (formato a confirmar com os integrantes 2 e 3).
 # ------------------------------------------------------------------
 AMBIENTES = {
     "Laboratório": {
         "capitulo": 1,
-        "personagens": ["Karla", "ORÁCULO"],
+        "personagens": ["karla", "oraculo"],
         "documento": "DOC01",
         "acoes": {
             "observar_equipamentos": "Observar equipamentos",
@@ -48,7 +61,7 @@ AMBIENTES = {
     },
     "Sala de Segurança": {
         "capitulo": 1,
-        "personagens": ["ORÁCULO"],
+        "personagens": ["oraculo"],
         "documento": "DOC02",
         "acoes": {
             "consultar_registros": "Consultar registros de entrada e saída",
@@ -59,7 +72,7 @@ AMBIENTES = {
     },
     "Sala de Planejamento": {
         "capitulo": 2,
-        "personagens": ["Helena"],
+        "personagens": ["helena"],
         "documento": "DOC03",
         "acoes": {
             "examinar_projecoes": "Examinar projeções estratégicas",
@@ -72,7 +85,7 @@ AMBIENTES = {
     },
     "Escritório de Dante": {
         "capitulo": 3,
-        "personagens": ["Dante"],
+        "personagens": ["dante"],
         "documento": "DOC04",
         "acoes": {
             "investigar_escritorio": "Investigar o escritório",
