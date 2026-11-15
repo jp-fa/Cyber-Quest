@@ -57,6 +57,7 @@ def mostrar_inventario(estado_jogo):
 
     if not inventario:
         print("Você ainda não encontrou documentos.")
+
     else:
         for documento in inventario:
             print(f"\nCódigo: {documento['codigo']}")
@@ -65,29 +66,14 @@ def mostrar_inventario(estado_jogo):
             print(f"Classificação: {documento['classificacao']}")
 
             if documento["entregue"]:
-                print(f"Situação: Entregue para {documento['entregue_para']}")
+                print(
+                    f"Situação: Entregue para "
+                    f"{documento['entregue_para']}"
+                )
             else:
                 print("Situação: Em posse de Alex")
 
     print("\n================================")
-
-
-def mostrar_personagens_ambiente(nome_ambiente):
-    """Mostra os personagens disponíveis no ambiente."""
-
-    ids = ambientes.obter_personagens_ambiente(nome_ambiente)
-
-    if not ids:
-        print("Não há personagens neste ambiente.")
-        return
-
-    print("\nPersonagens presentes:")
-
-    for personagem_id in ids:
-        dados = personagens.obter_personagem(personagem_id)
-
-        if dados:
-            print(f"- {dados['nome']}")
 
 
 def escolher_opcao(mensagem, opcoes_validas):
@@ -103,13 +89,128 @@ def escolher_opcao(mensagem, opcoes_validas):
 
 
 # ============================================================
+# CONTROLE DE DISPONIBILIDADE DOS PERSONAGENS
+# ============================================================
+
+def personagem_disponivel_para_conversa(
+    estado_jogo,
+    personagem_id
+):
+    """
+    Verifica se ainda existe alguma etapa de conversa pendente.
+
+    Karla e ORÁCULO:
+        Podem ser abordados uma única vez.
+
+    Helena:
+        Possui duas etapas:
+        - progresso
+        - responsabilidade
+
+    Dante:
+        Possui duas etapas:
+        - alianca
+        - intencoes
+    """
+
+    decisoes = estado_jogo.get("decisoes", {})
+
+    if not isinstance(decisoes, dict):
+        return False
+
+    # --------------------------------------------------------
+    # HELENA
+    # --------------------------------------------------------
+
+    if personagem_id == "helena":
+
+        etapas = [
+            "helena_progresso_capitulo_2",
+            "helena_responsabilidade_capitulo_2"
+        ]
+
+        return not all(
+            etapa in decisoes
+            for etapa in etapas
+        )
+
+    # --------------------------------------------------------
+    # DANTE
+    # --------------------------------------------------------
+
+    if personagem_id == "dante":
+
+        etapas = [
+            "dante_alianca_capitulo_3",
+            "dante_intencoes_capitulo_3"
+        ]
+
+        return not all(
+            etapa in decisoes
+            for etapa in etapas
+        )
+
+    # --------------------------------------------------------
+    # KARLA E ORÁCULO
+    # --------------------------------------------------------
+
+    return not personagens.verificar_personagem_abordado(
+        estado_jogo,
+        personagem_id
+    )
+
+
+def mostrar_personagens_ambiente(
+    estado_jogo,
+    nome_ambiente
+):
+    """Mostra somente personagens com conversas disponíveis."""
+
+    ids = ambientes.obter_personagens_ambiente(
+        nome_ambiente
+    )
+
+    disponiveis = []
+
+    for personagem_id in ids:
+
+        if not personagem_disponivel_para_conversa(
+            estado_jogo,
+            personagem_id
+        ):
+            continue
+
+        dados = personagens.obter_personagem(
+            personagem_id
+        )
+
+        if dados:
+            disponiveis.append(dados["nome"])
+
+    if not disponiveis:
+        print(
+            "\nNão há personagens disponíveis "
+            "para conversar neste ambiente."
+        )
+        return
+
+    print("\nPersonagens disponíveis:")
+
+    for nome in disponiveis:
+        print(f"- {nome}")
+
+
+# ============================================================
 # INTERAÇÕES COM PERSONAGENS
 # ============================================================
 
 def conversar_com_karla(estado_jogo):
     """Executa a conversa com Karla no Capítulo 1."""
 
-    if personagens.verificar_personagem_abordado(estado_jogo, "karla"):
+    if personagens.verificar_personagem_abordado(
+        estado_jogo,
+        "karla"
+    ):
         print("\nAlex já conversou com Karla neste capítulo.")
         return False
 
@@ -122,7 +223,10 @@ def conversar_com_karla(estado_jogo):
     for numero, descricao in conversa["opcoes"].items():
         print(f"{numero} - {descricao}")
 
-    escolha = escolher_opcao("Sua escolha: ", ["1", "2"])
+    escolha = escolher_opcao(
+        "Sua escolha: ",
+        ["1", "2"]
+    )
 
     resultado = capitulo1.interagir_com_karla(
         estado_jogo,
@@ -130,7 +234,13 @@ def conversar_com_karla(estado_jogo):
     )
 
     if not resultado.get("sucesso"):
-        print("\n" + resultado.get("mensagem", "Não foi possível conversar."))
+        print(
+            "\n"
+            + resultado.get(
+                "mensagem",
+                "Não foi possível conversar."
+            )
+        )
         return False
 
     print("\n" + resultado["texto"])
@@ -141,25 +251,41 @@ def conversar_com_karla(estado_jogo):
 def conversar_com_oraculo(estado_jogo):
     """Registra a conversa opcional com ORÁCULO no Capítulo 1."""
 
-    if personagens.verificar_personagem_abordado(estado_jogo, "oraculo"):
+    if personagens.verificar_personagem_abordado(
+        estado_jogo,
+        "oraculo"
+    ):
         print("\nAlex já conversou com ORÁCULO neste capítulo.")
         return False
 
-    print("\n" + historia.apresentar_conversa_oraculo())
+    print(
+        "\n"
+        + historia.apresentar_conversa_oraculo()
+    )
 
-    sucesso = capitulo1.registrar_conversa_oraculo(estado_jogo)
+    sucesso = capitulo1.registrar_conversa_oraculo(
+        estado_jogo
+    )
 
     if not sucesso:
-        print("Não foi possível registrar a conversa.")
+        print("\nNão foi possível registrar a conversa.")
         return False
 
     return True
 
 
 def conversar_com_helena(estado_jogo):
-    """Executa as duas etapas da conversa com Helena."""
+    """
+    Executa as duas etapas da conversa com Helena.
 
-    conversa = historia.apresentar_conversa_helena()
+    Cada etapa é salva individualmente para permitir
+    que o jogador continue a conversa após carregar
+    um progresso interrompido.
+    """
+
+    conversa = historia.apresentar_conversa_helena(
+        estado_jogo
+    )
 
     print("\n" + conversa["texto"])
 
@@ -169,9 +295,11 @@ def conversar_com_helena(estado_jogo):
 
         chave = f"helena_{etapa}_capitulo_2"
 
-        # Permite continuar uma conversa interrompida.
+        # Se a etapa já foi concluída, pula para a próxima.
         if chave in estado_jogo["decisoes"]:
-            print(f"\nEtapa '{etapa}' já registrada.")
+            print(
+                f"\nEtapa '{etapa}' já registrada."
+            )
             continue
 
         print(f"\nEtapa: {etapa.upper()}")
@@ -181,7 +309,10 @@ def conversar_com_helena(estado_jogo):
         for numero, descricao in opcoes.items():
             print(f"{numero} - {descricao}")
 
-        escolha = escolher_opcao("Sua escolha: ", ["1", "2"])
+        escolha = escolher_opcao(
+            "Sua escolha: ",
+            ["1", "2"]
+        )
 
         resultado = capitulo2.interagir_com_helena(
             estado_jogo,
@@ -190,19 +321,30 @@ def conversar_com_helena(estado_jogo):
         )
 
         if not resultado.get("sucesso"):
-            print("\n" + resultado.get("mensagem", "Erro na interação."))
+            print(
+                "\n"
+                + resultado.get(
+                    "mensagem",
+                    "Erro na interação."
+                )
+            )
             return False
 
         print("\n" + resultado["texto"])
 
-        # Salva cada etapa para permitir retomada.
+        # Salva imediatamente cada etapa.
         salvar_progresso(estado_jogo)
 
     return True
 
 
 def conversar_com_dante(estado_jogo):
-    """Executa as duas etapas da conversa com Dante."""
+    """
+    Executa as duas etapas da conversa com Dante.
+
+    Cada etapa é salva individualmente para permitir
+    a retomada da conversa após carregar o progresso.
+    """
 
     conversa = historia.apresentar_conversa_dante()
 
@@ -214,9 +356,11 @@ def conversar_com_dante(estado_jogo):
 
         chave = f"dante_{etapa}_capitulo_3"
 
-        # Permite continuar uma conversa interrompida.
+        # Se a etapa já foi concluída, pula para a próxima.
         if chave in estado_jogo["decisoes"]:
-            print(f"\nEtapa '{etapa}' já registrada.")
+            print(
+                f"\nEtapa '{etapa}' já registrada."
+            )
             continue
 
         print(f"\nEtapa: {etapa.upper()}")
@@ -226,7 +370,10 @@ def conversar_com_dante(estado_jogo):
         for numero, descricao in opcoes.items():
             print(f"{numero} - {descricao}")
 
-        escolha = escolher_opcao("Sua escolha: ", ["1", "2"])
+        escolha = escolher_opcao(
+            "Sua escolha: ",
+            ["1", "2"]
+        )
 
         resultado = capitulo3.interagir_com_dante(
             estado_jogo,
@@ -235,12 +382,18 @@ def conversar_com_dante(estado_jogo):
         )
 
         if not resultado.get("sucesso"):
-            print("\n" + resultado.get("mensagem", "Erro na interação."))
+            print(
+                "\n"
+                + resultado.get(
+                    "mensagem",
+                    "Erro na interação."
+                )
+            )
             return False
 
         print("\n" + resultado["texto"])
 
-        # Salva cada etapa para permitir retomada.
+        # Salva imediatamente cada etapa.
         salvar_progresso(estado_jogo)
 
     return True
@@ -258,14 +411,17 @@ def encontrar_documento(estado_jogo, acao):
             capitulo1.encontrar_doc01,
             historia.apresentar_doc01
         ),
+
         "encontrar_doc02": (
             capitulo1.encontrar_doc02,
             historia.apresentar_doc02
         ),
+
         "encontrar_doc03": (
             capitulo2.encontrar_doc03,
             historia.apresentar_doc03
         ),
+
         "encontrar_doc04": (
             capitulo3.encontrar_doc04,
             historia.apresentar_doc04
@@ -273,13 +429,16 @@ def encontrar_documento(estado_jogo, acao):
     }
 
     if acao not in documentos:
-        print("Documento não reconhecido.")
+        print("\nDocumento não reconhecido.")
         return False
 
     funcao_encontrar, funcao_narrativa = documentos[acao]
 
     if not funcao_encontrar(estado_jogo):
-        print("\nEste documento já foi encontrado ou não está disponível.")
+        print(
+            "\nEste documento já foi encontrado "
+            "ou não está disponível."
+        )
         return False
 
     print("\n" + funcao_narrativa())
@@ -287,10 +446,23 @@ def encontrar_documento(estado_jogo, acao):
     return True
 
 
-def entregar_documentos(estado_jogo):
-    """Permite entregar documentos encontrados a outros personagens."""
+# ============================================================
+# ENTREGA DE DOCUMENTOS
+# ============================================================
 
-    inventario = investigacao.obter_inventario(estado_jogo)
+def entregar_documentos(estado_jogo):
+    """
+    Permite entregar documentos somente a personagens
+    presentes no ambiente atual.
+    """
+
+    # --------------------------------------------------------
+    # VERIFICAR DOCUMENTOS DISPONÍVEIS
+    # --------------------------------------------------------
+
+    inventario = investigacao.obter_inventario(
+        estado_jogo
+    )
 
     disponiveis = [
         documento
@@ -299,25 +471,69 @@ def entregar_documentos(estado_jogo):
     ]
 
     if not disponiveis:
-        print("\nNão existem documentos disponíveis para entrega.")
+        print(
+            "\nNão existem documentos disponíveis para entrega."
+        )
         return False
 
-    destinatarios = investigacao.listar_destinatarios()
+    # --------------------------------------------------------
+    # IDENTIFICAR PERSONAGENS PRESENTES
+    # --------------------------------------------------------
+
+    nome_ambiente = estado_jogo["ambiente_atual"]
+
+    ids_presentes = ambientes.obter_personagens_ambiente(
+        nome_ambiente
+    )
+
+    destinatarios = []
+
+    for personagem_id in ids_presentes:
+
+        # Alex e ORÁCULO não podem receber documentos.
+        if personagem_id in ("alex", "oraculo"):
+            continue
+
+        dados = personagens.obter_personagem(
+            personagem_id
+        )
+
+        if dados:
+            destinatarios.append({
+                "id": personagem_id,
+                "nome": dados["nome"]
+            })
+
+    if not destinatarios:
+        print(
+            "\nNão existem personagens disponíveis para "
+            "receber documentos neste ambiente."
+        )
+        return False
 
     entregou_algum = False
 
+    # --------------------------------------------------------
+    # PROCESSO DE ENTREGA
+    # --------------------------------------------------------
+
     while disponiveis:
 
-        print("\n========== DOCUMENTOS DISPONÍVEIS ==========")
+        print(
+            "\n========== DOCUMENTOS DISPONÍVEIS =========="
+        )
 
         for documento in disponiveis:
             print(
-                f"{documento['codigo']} - {documento['nome']}"
+                f"{documento['codigo']} - "
+                f"{documento['nome']}"
             )
 
         print("0 - Encerrar entregas")
 
-        codigo = input("\nDigite o código do documento: ").strip().upper()
+        codigo = input(
+            "\nDigite o código do documento: "
+        ).strip().upper()
 
         if codigo == "0":
             break
@@ -332,32 +548,47 @@ def entregar_documentos(estado_jogo):
         )
 
         if documento_escolhido is None:
-            print("Código inválido.")
+            print("\nCódigo inválido.")
             continue
+
+        # ----------------------------------------------------
+        # MOSTRAR DESTINATÁRIOS
+        # ----------------------------------------------------
 
         print("\n========== DESTINATÁRIOS ==========")
 
-        for indice, destinatario in enumerate(destinatarios, start=1):
-            print(f"{indice} - {destinatario['nome']}")
+        for indice, destinatario in enumerate(
+            destinatarios,
+            start=1
+        ):
+            print(
+                f"{indice} - {destinatario['nome']}"
+            )
 
         print("0 - Cancelar entrega")
 
-        escolha = input("\nEscolha o destinatário: ").strip()
+        escolha = input(
+            "\nEscolha o destinatário: "
+        ).strip()
 
         if escolha == "0":
             continue
 
         if not escolha.isdigit():
-            print("Opção inválida.")
+            print("\nOpção inválida.")
             continue
 
         indice = int(escolha) - 1
 
         if indice < 0 or indice >= len(destinatarios):
-            print("Destinatário inválido.")
+            print("\nDestinatário inválido.")
             continue
 
         destinatario = destinatarios[indice]
+
+        # ----------------------------------------------------
+        # REGISTRAR ENTREGA
+        # ----------------------------------------------------
 
         sucesso = investigacao.entregar_documento(
             estado_jogo,
@@ -366,6 +597,7 @@ def entregar_documentos(estado_jogo):
         )
 
         if sucesso:
+
             print(
                 f"\nDocumento {codigo} entregue para "
                 f"{destinatario['nome']}."
@@ -375,6 +607,7 @@ def entregar_documentos(estado_jogo):
 
             salvar_progresso(estado_jogo)
 
+            # Remove somente o documento entregue.
             disponiveis = [
                 documento
                 for documento in disponiveis
@@ -382,16 +615,19 @@ def entregar_documentos(estado_jogo):
             ]
 
         else:
-            print("Não foi possível entregar este documento.")
+            print(
+                "\nNão foi possível entregar este documento."
+            )
 
     return entregou_algum
 
 
 # ============================================================
-# EXECUÇÃO DAS AÇÕES DOS AMBIENTES
+# EXECUÇÃO DAS CONVERSAS
 # ============================================================
 
 def executar_conversa(estado_jogo, acao):
+    """Encaminha a ação para a função de conversa correspondente."""
 
     conversas = {
         "conversar_karla": conversar_com_karla,
@@ -408,13 +644,27 @@ def executar_conversa(estado_jogo, acao):
     return funcao(estado_jogo)
 
 
+# ============================================================
+# EXECUÇÃO DAS AÇÕES DOS AMBIENTES
+# ============================================================
+
 def executar_acao(estado_jogo, acao):
     """Executa uma ação disponível no ambiente atual."""
 
     nome_ambiente = estado_jogo["ambiente_atual"]
 
-    if ambientes.acao_ja_realizada(estado_jogo, acao):
-        print("\nEsta ação já foi realizada neste ambiente.")
+    # A entrega de documentos pode ser repetida.
+    # As demais ações são executadas apenas uma vez.
+    if (
+        acao != "entregar_documentos"
+        and ambientes.acao_ja_realizada(
+            estado_jogo,
+            acao
+        )
+    ):
+        print(
+            "\nEsta ação já foi realizada neste ambiente."
+        )
         return
 
     # --------------------------------------------------------
@@ -451,10 +701,11 @@ def executar_acao(estado_jogo, acao):
 
     elif acao == "entregar_documentos":
 
-        sucesso = entregar_documentos(estado_jogo)
+        entregar_documentos(estado_jogo)
 
-        if not sucesso:
-            return
+        # Não registra a entrega como ação concluída.
+        # A disponibilidade depende do inventário.
+        return
 
     # --------------------------------------------------------
     # OUTRAS AÇÕES NARRATIVAS
@@ -469,6 +720,7 @@ def executar_acao(estado_jogo, acao):
 
         if narrativa:
             print("\n" + narrativa)
+
         else:
             print("\nAção realizada.")
 
@@ -476,10 +728,73 @@ def executar_acao(estado_jogo, acao):
     # REGISTRAR A AÇÃO E SALVAR
     # --------------------------------------------------------
 
-    if ambientes.registrar_acao_ambiente(estado_jogo, acao):
-        salvar_progresso(estado_jogo)
+    if ambientes.registrar_acao_ambiente(
+        estado_jogo,
+        acao
+    ):
+
+        # As conversas de Helena e Dante já salvam
+        # cada etapa individualmente.
+        # As outras ações são salvas aqui.
+        if not acao.startswith("conversar_"):
+            salvar_progresso(estado_jogo)
+
     else:
-        print("\nNão foi possível registrar esta ação.")
+        print(
+            "\nNão foi possível registrar esta ação."
+        )
+
+
+# ============================================================
+# DISPONIBILIDADE DAS AÇÕES
+# ============================================================
+
+def acao_disponivel_no_menu(estado_jogo, codigo):
+    """Verifica se uma ação ainda pode aparecer no menu."""
+
+    # --------------------------------------------------------
+    # ENTREGA DE DOCUMENTOS
+    # --------------------------------------------------------
+
+    if codigo == "entregar_documentos":
+
+        inventario = investigacao.obter_inventario(
+            estado_jogo
+        )
+
+        return any(
+            not documento["entregue"]
+            for documento in inventario
+        )
+
+    # --------------------------------------------------------
+    # VERIFICAR AÇÕES JÁ REALIZADAS
+    # --------------------------------------------------------
+
+    if ambientes.acao_ja_realizada(
+        estado_jogo,
+        codigo
+    ):
+        return False
+
+    # --------------------------------------------------------
+    # VERIFICAR CONVERSAS PENDENTES
+    # --------------------------------------------------------
+
+    if codigo.startswith("conversar_"):
+
+        id_personagem = codigo.replace(
+            "conversar_",
+            "",
+            1
+        )
+
+        return personagem_disponivel_para_conversa(
+            estado_jogo,
+            id_personagem
+        )
+
+    return True
 
 
 # ============================================================
@@ -493,18 +808,28 @@ def menu_ambiente(estado_jogo):
 
     while estado_jogo["ambiente_atual"] is not None:
 
-        dados_ambiente = ambientes.AMBIENTES[nome_ambiente]
+        dados_ambiente = ambientes.AMBIENTES[
+            nome_ambiente
+        ]
 
         print("\n" + "=" * 50)
         print(f"AMBIENTE: {nome_ambiente.upper()}")
         print("=" * 50)
 
-        mostrar_personagens_ambiente(nome_ambiente)
+        mostrar_personagens_ambiente(
+            estado_jogo,
+            nome_ambiente
+        )
 
+        # Lista somente as ações disponíveis.
         acoes_disponiveis = [
             (codigo, descricao)
-            for codigo, descricao in dados_ambiente["acoes"].items()
-            if not ambientes.acao_ja_realizada(estado_jogo, codigo)
+            for codigo, descricao
+            in dados_ambiente["acoes"].items()
+            if acao_disponivel_no_menu(
+                estado_jogo,
+                codigo
+            )
         ]
 
         print("\nO que deseja fazer?")
@@ -521,12 +846,16 @@ def menu_ambiente(estado_jogo):
         escolha = input("\nEscolha: ").strip()
 
         if escolha == "0":
+
             mostrar_inventario(estado_jogo)
 
         elif escolha == "9":
 
             if ambientes.sair_ambiente(estado_jogo):
-                print(f"\nAlex saiu de {nome_ambiente}.")
+
+                print(
+                    f"\nAlex saiu de {nome_ambiente}."
+                )
 
                 salvar_progresso(estado_jogo)
 
@@ -546,10 +875,10 @@ def menu_ambiente(estado_jogo):
                 )
 
             else:
-                print("Opção inválida.")
+                print("\nOpção inválida.")
 
         else:
-            print("Digite uma opção válida.")
+            print("\nDigite uma opção válida.")
 
 
 # ============================================================
@@ -568,7 +897,10 @@ def entrar_em_ambiente(estado_jogo, nome):
         print("\n" + motivo)
         return
 
-    if ambientes.entrar_ambiente(estado_jogo, nome):
+    if ambientes.entrar_ambiente(
+        estado_jogo,
+        nome
+    ):
 
         print(f"\nAlex entrou em {nome}.")
 
@@ -584,7 +916,9 @@ def entrar_em_ambiente(estado_jogo, nome):
 def encerrar_e_avancar_capitulo(estado_jogo):
     """Encerra o capítulo atual e avança para o próximo."""
 
-    resultado = historia.encerrar_capitulo(estado_jogo)
+    resultado = historia.encerrar_capitulo(
+        estado_jogo
+    )
 
     if not resultado.get("sucesso"):
         print("\n" + resultado["texto"])
@@ -601,11 +935,9 @@ def encerrar_e_avancar_capitulo(estado_jogo):
 
         salvar_progresso(estado_jogo)
 
-        print("\n" + "=" * 50)
-        print(f"CAPÍTULO {estado_jogo['capitulo_atual']}")
-        print("=" * 50)
-
-        abertura = historia.abrir_capitulo(estado_jogo)
+        abertura = historia.abrir_capitulo(
+            estado_jogo
+        )
 
         if abertura:
             print("\n" + abertura)
@@ -631,7 +963,13 @@ def resolver_final(estado_jogo):
         )
 
         if not resultado.get("sucesso"):
-            print("\n" + resultado.get("mensagem", "Não foi possível confrontar Dante."))
+            print(
+                "\n"
+                + resultado.get(
+                    "mensagem",
+                    "Não foi possível confrontar Dante."
+                )
+            )
             return False
 
         print("\n" + resultado["texto"])
@@ -644,7 +982,12 @@ def resolver_final(estado_jogo):
 
     if estado_jogo["decisao_final"] is None:
 
-        print("\n" + historia.apresentar_persuasao_oraculo(estado_jogo))
+        print(
+            "\n"
+            + historia.apresentar_persuasao_oraculo(
+                estado_jogo
+            )
+        )
 
         escolha = escolher_opcao(
             "\nQual será o destino de ORÁCULO? ",
@@ -657,7 +1000,13 @@ def resolver_final(estado_jogo):
         )
 
         if not resultado.get("sucesso"):
-            print("\n" + resultado.get("mensagem", "Decisão inválida."))
+            print(
+                "\n"
+                + resultado.get(
+                    "mensagem",
+                    "Decisão inválida."
+                )
+            )
             return False
 
         salvar_progresso(estado_jogo)
@@ -666,7 +1015,9 @@ def resolver_final(estado_jogo):
     # APRESENTAR FINAL
     # --------------------------------------------------------
 
-    texto_final = historia.apresentar_final(estado_jogo)
+    texto_final = historia.apresentar_final(
+        estado_jogo
+    )
 
     if texto_final:
         print("\n" + "=" * 60)
@@ -684,7 +1035,10 @@ def executar_jogo(estado_jogo):
     """Controla o fluxo geral dos três capítulos."""
 
     if estado_jogo["jogo_concluido"]:
-        texto_final = historia.apresentar_final(estado_jogo)
+
+        texto_final = historia.apresentar_final(
+            estado_jogo
+        )
 
         if texto_final:
             print("\n" + texto_final)
@@ -695,27 +1049,39 @@ def executar_jogo(estado_jogo):
 
         capitulo = estado_jogo["capitulo_atual"]
 
-        # Se o jogador estava dentro de uma sala quando saiu,
-        # o ambiente será retomado automaticamente.
+        # ----------------------------------------------------
+        # RETOMAR AMBIENTE EM ANDAMENTO
+        # ----------------------------------------------------
+
         if estado_jogo["ambiente_atual"] is not None:
 
             menu_ambiente(estado_jogo)
 
             continue
 
-        # Capítulo 3: depois de sair do escritório, inicia o final.
+        # ----------------------------------------------------
+        # CAPÍTULO 3: CONFRONTO E FINAL
+        # ----------------------------------------------------
+
         if (
             capitulo == 3
-            and "Escritório de Dante" in estado_jogo["ambientes_visitados"]
+            and "Escritório de Dante"
+            in estado_jogo["ambientes_visitados"]
         ):
 
             resolver_final(estado_jogo)
 
             if not estado_jogo["jogo_concluido"]:
-                print("\nNão foi possível concluir o capítulo.")
+                print(
+                    "\nNão foi possível concluir o capítulo."
+                )
                 break
 
             continue
+
+        # ----------------------------------------------------
+        # AMBIENTES DISPONÍVEIS
+        # ----------------------------------------------------
 
         ambientes_disponiveis = ambientes.listar_ambientes(
             estado_jogo
@@ -724,7 +1090,9 @@ def executar_jogo(estado_jogo):
         # Todos os ambientes obrigatórios foram visitados.
         if not ambientes_disponiveis:
 
-            encerrar_e_avancar_capitulo(estado_jogo)
+            encerrar_e_avancar_capitulo(
+                estado_jogo
+            )
 
             continue
 
@@ -753,7 +1121,10 @@ def executar_jogo(estado_jogo):
 
             salvar_progresso(estado_jogo)
 
-            print("\nJogo encerrado. Seu progresso foi preservado.")
+            print(
+                "\nJogo encerrado. "
+                "Seu progresso foi preservado."
+            )
 
             return
 
@@ -771,13 +1142,16 @@ def executar_jogo(estado_jogo):
                 )
 
             else:
-                print("Opção inválida.")
+                print("\nOpção inválida.")
 
         else:
-            print("Digite uma opção válida.")
+            print("\nDigite uma opção válida.")
 
     if estado_jogo["jogo_concluido"]:
-        print("\nObrigado por jogar CyberQuest: O Protocolo ORÁCULO!")
+        print(
+            "\nObrigado por jogar "
+            "CyberQuest: O Protocolo ORÁCULO!"
+        )
 
 
 # ============================================================
@@ -791,11 +1165,9 @@ def iniciar_nova_partida():
 
     salvar_progresso(estado_jogo)
 
-    print("\n" + "=" * 60)
-    print("CYBERQUEST: O PROTOCOLO ORÁCULO")
-    print("=" * 60)
-
-    abertura = historia.abrir_capitulo(estado_jogo)
+    abertura = historia.abrir_capitulo(
+        estado_jogo
+    )
 
     if abertura:
         print("\n" + abertura)
@@ -806,72 +1178,98 @@ def iniciar_nova_partida():
 def menu_inicial():
     """Permite iniciar uma partida ou carregar um save existente."""
 
-    estado_salvo, erro = salvamento.carregar_jogo()
-
     print("\n" + "=" * 60)
     print("CYBERQUEST: O PROTOCOLO ORÁCULO")
     print("=" * 60)
 
-    if estado_salvo is not None:
+    while True:
 
-        print("\n1 - Continuar partida")
-        print("2 - Iniciar nova partida")
-        print("0 - Sair")
+        estado_salvo, erro = salvamento.carregar_jogo()
 
-        escolha = escolher_opcao(
-            "\nEscolha: ",
-            ["0", "1", "2"]
-        )
+        # ----------------------------------------------------
+        # EXISTE UM PROGRESSO SALVO
+        # ----------------------------------------------------
 
-        if escolha == "0":
-            return None
+        if estado_salvo is not None:
 
-        if escolha == "1":
+            print("\n1 - Continuar partida")
+            print("2 - Iniciar nova partida")
+            print("0 - Sair")
 
-            print("\nProgresso carregado com sucesso.")
-
-            print(
-                f"Capítulo atual: {estado_salvo['capitulo_atual']}"
+            escolha = escolher_opcao(
+                "\nEscolha: ",
+                ["0", "1", "2"]
             )
 
-            if estado_salvo["ambiente_atual"] is not None:
-                print(
-                    "Ambiente em andamento: "
-                    + estado_salvo["ambiente_atual"]
-                )
-
-            return estado_salvo
-
-        if escolha == "2":
-
-            confirmacao = input(
-                "\nIsso substituirá o progresso salvo. Deseja continuar? (s/n): "
-            ).strip().lower()
-
-            if confirmacao != "s":
+            if escolha == "0":
                 return None
 
-            return iniciar_nova_partida()
+            elif escolha == "1":
 
-    else:
+                print("\nProgresso carregado com sucesso.")
 
-        print("\nNenhum progresso válido foi encontrado.")
+                print(
+                    f"Capítulo atual: "
+                    f"{estado_salvo['capitulo_atual']}"
+                )
 
-        if erro:
-            print(erro)
+                if estado_salvo["ambiente_atual"] is not None:
+                    print(
+                        "Ambiente em andamento: "
+                        + estado_salvo["ambiente_atual"]
+                    )
 
-        print("\n1 - Iniciar nova partida")
-        print("0 - Sair")
+                return estado_salvo
 
-        escolha = escolher_opcao(
-            "\nEscolha: ",
-            ["0", "1"]
-        )
+            elif escolha == "2":
 
-        if escolha == "0":
-            return None
+                while True:
 
-        return iniciar_nova_partida()
+                    confirmacao = input(
+                        "\nIsso substituirá o progresso salvo. "
+                        "Deseja continuar? (s/n): "
+                    ).strip().lower()
+
+                    if confirmacao == "s":
+                        return iniciar_nova_partida()
+
+                    elif confirmacao == "n":
+                        print("\nOperação cancelada.")
+                        print("Voltando ao menu inicial...")
+                        break
+
+                    else:
+                        print(
+                            "\nResposta inválida. "
+                            "Digite apenas 's' ou 'n'."
+                        )
+
+        # ----------------------------------------------------
+        # NÃO EXISTE UM PROGRESSO VÁLIDO
+        # ----------------------------------------------------
+
+        else:
+
+            print(
+                "\nNenhum progresso válido foi encontrado."
+            )
+
+            if erro:
+                print(erro)
+
+            print("\n1 - Iniciar nova partida")
+            print("0 - Sair")
+
+            escolha = escolher_opcao(
+                "\nEscolha: ",
+                ["0", "1"]
+            )
+
+            if escolha == "0":
+                return None
+
+            elif escolha == "1":
+                return iniciar_nova_partida()
 
 
 # ============================================================
@@ -879,6 +1277,7 @@ def menu_inicial():
 # ============================================================
 
 def main():
+    """Ponto de entrada do jogo."""
 
     estado_jogo = menu_inicial()
 
