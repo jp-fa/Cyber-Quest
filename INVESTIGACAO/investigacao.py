@@ -11,7 +11,7 @@ Responsabilidade:
 - Consultar histórico de entregas.
 """
 
-from personagens import personagens
+from INVESTIGACAO.personagens import personagens
 
 
 # ==========================================

@@ -1,258 +1,158 @@
- 
+
 """
 capitulo1.py
 CyberQuest: O Protocolo ORÁCULO
 
 Responsabilidade:
-- Apresentar a conversa com Dra. Karla.
-- Registrar as escolhas de Alex.
+- Controlar as mecânicas de interação do Capítulo 1.
+- Registrar a abordagem de Karla e ORÁCULO.
 - Atualizar a confiança de Karla.
-- Encontrar e consultar o DOC01.
+- Encontrar e consultar DOC01 e DOC02.
+
+Os diálogos e textos narrativos pertencem a HISTORIA/capitulo1.py.
 """
 
-from personagens import (
+from INVESTIGACAO.personagens import (
     abordar_personagem,
+    verificar_personagem_abordado,
+    motivo_bloqueio_abordagem,
+    motivo_bloqueio_confianca,
     registrar_escolha_confianca
 )
 
-from investigacao import (
+from INVESTIGACAO.investigacao import (
     encontrar_documento,
     consultar_documento
 )
 
-
-# ==========================================
-# CONVERSA COM DRA. KARLA
-# ==========================================
-
-def apresentar_conversa_karla():
-
-    print("""
-========================================
-       CONVERSA COM DRA. KARLA
-========================================
-
-Alex: Dra. Karla. Faz muito tempo.
-
-Karla: Alex? Não imaginei que voltaria
-a colocar os pés neste laboratório.
-
-Alex: Preciso entender o que aconteceu
-com o projeto ORÁCULO.
-
-Karla: Você sabe que o projeto evoluiu
-muito desde a sua saída.
-
-Alex: Evoluiu ou saiu do controle?
-
-Karla: Não podemos ignorar os avanços
-que conseguimos alcançar.
-
-Alex: E os riscos? Também evoluíram?
-
-Karla: Existem consequências em qualquer
-grande descoberta científica.
-
-Alex: Não foi isso que me ensinaram
-quando participei deste projeto.
-
-Karla: Muita coisa mudou desde então,
-Alex. Inclusive as pessoas.
-""")
-
-    print("\nEscolha a resposta de Alex:")
-    print("\n1 - Demonstrar confiança em Karla e pedir sua ajuda.")
-    print("2 - Questionar Karla sobre sua participação no projeto.")
+from HISTORIA import capitulo1 as historia_capitulo1
 
 
 # ==========================================
-# REAÇÃO DE KARLA
+# INTERAÇÃO COM KARLA
 # ==========================================
 
-def apresentar_reacao_karla(escolha):
+def interagir_com_karla(estado_jogo, escolha):
+    """
+    Registra a decisão narrativa de Alex com Karla,
+    sua abordagem e a alteração de confiança.
 
-    if not isinstance(escolha, str):
-        escolha = str(escolha)
+    A escolha deve ser "1" ou "2".
+    Retorna um dicionário com o resultado.
+    """
 
-    escolha = escolha.strip()
-
-    if escolha == "1":
-
-        print("""
-Alex: Ainda acredito que você possa
-me ajudar a entender o que aconteceu.
-
-Karla: Talvez eu possa. Mas existem
-informações que não posso revelar
-tão facilmente.
-
-Alex: Preciso saber a verdade.
-
-Karla: Então comece analisando os
-relatórios do laboratório. Eles podem
-mostrar o que estamos tentando esconder.
-""")
-
-        return "positiva"
-
-    elif escolha == "2":
-
-        print("""
-Alex: Você participou do desenvolvimento
-do ORÁCULO. Preciso saber até onde
-foi sua responsabilidade.
-
-Karla: Cuidado com suas acusações, Alex.
-Você não conhece todas as circunstâncias.
-
-Alex: Então me explique o que aconteceu.
-
-Karla: Não posso simplesmente revelar
-informações confidenciais da NEXUS.
-""")
-
-        return "negativa"
-
-    else:
-
-        print("Escolha inválida!")
-        return None
-
-
-# ==========================================
-# EXECUTAR INTERAÇÃO COM KARLA
-# ==========================================
-
-def interagir_com_karla(estado_jogo):
-
-    # Verifica se o estado é válido
     if not isinstance(estado_jogo, dict):
-        print("Estado do jogo inválido!")
+        return {"sucesso": False, "mensagem": "Estado do jogo inválido."}
+
+    if estado_jogo.get("capitulo_atual") != 1:
+        return {"sucesso": False, "mensagem": "Esta interação pertence ao Capítulo 1."}
+
+    if motivo_bloqueio_abordagem(estado_jogo, "karla") is not None:
+        return {
+            "sucesso": False,
+            "mensagem": motivo_bloqueio_abordagem(estado_jogo, "karla")
+        }
+
+    if motivo_bloqueio_confianca(
+        estado_jogo, "karla", 20 if str(escolha).strip() == "1" else -20
+    ) is not None:
+        return {"sucesso": False, "mensagem": "Não foi possível atualizar a confiança de Karla."}
+
+    # Registra a escolha narrativa em HISTORIA.
+    resultado = historia_capitulo1.registrar_decisao_karla(
+        estado_jogo, escolha
+    )
+
+    if not resultado.get("sucesso"):
+        return resultado
+
+    # Registra a abordagem.
+    if not abordar_personagem(estado_jogo, "karla"):
+        return {"sucesso": False, "mensagem": "Não foi possível registrar a abordagem de Karla."}
+
+    # Atualiza a confiança conforme a escolha.
+    if registrar_escolha_confianca(
+        estado_jogo,
+        "karla",
+        resultado["classificacao"],
+        motivo="Decisão de Alex durante a conversa com Karla"
+    ) is None:
+        return {"sucesso": False, "mensagem": "Não foi possível atualizar a confiança de Karla."}
+
+    return resultado
+
+
+# ==========================================
+# INTERAÇÃO COM ORÁCULO
+# ==========================================
+
+def registrar_conversa_oraculo(estado_jogo):
+    """
+    Registra que Alex conversou com ORÁCULO no Capítulo 1.
+
+    O diálogo é fornecido por HISTORIA/capitulo1.py.
+    ORÁCULO só pode ser abordado uma vez neste capítulo.
+    """
+
+    if not isinstance(estado_jogo, dict):
         return False
 
     if estado_jogo.get("capitulo_atual") != 1:
-        print("Esta interação pertence ao Capítulo 1.")
         return False
 
-    # Verifica se Karla já foi abordada
-    abordados = estado_jogo.get("personagens_abordados", {})
-    capitulo = str(estado_jogo["capitulo_atual"])
-
-    if capitulo not in abordados:
-        print("Registro de abordagens não encontrado!")
+    if verificar_personagem_abordado(estado_jogo, "oraculo"):
         return False
 
-    if "karla" in abordados[capitulo]:
-        print("Você já abordou Karla neste capítulo!")
-        return False
-
-    # Verifica se a confiança pode ser registrada
-    historico = estado_jogo.get("escolhas_confianca", {})
-    confianca = estado_jogo.get("confianca", {})
-
-    if "Karla" not in historico or "Karla" not in confianca:
-        print("Dados de confiança de Karla não encontrados!")
-        return False
-
-    for registro in historico["Karla"]:
-        if registro.get("capitulo") == 1:
-            print("A confiança de Karla já foi alterada neste capítulo!")
-            return False
-
-    # Apresenta a conversa
-    apresentar_conversa_karla()
-
-    # Recebe a escolha de Alex
-    escolha = input("\nDigite sua escolha: ").strip()
-
-    # Apresenta a reação
-    resultado = apresentar_reacao_karla(escolha)
-
-    if resultado is None:
-        print("Interação não concluída. Tente novamente.")
-        return False
-
-    # Registra a abordagem
-    if not abordar_personagem(estado_jogo, "karla"):
-        return False
-
-    # Atualiza a confiança
-    if not registrar_escolha_confianca(
-        estado_jogo,
-        "karla",
-        resultado
-    ):
-        return False
-
-    return True
+    return abordar_personagem(estado_jogo, "oraculo")
 
 
 # ==========================================
-# ENCONTRAR DOC01
+# DOCUMENTOS DO CAPÍTULO 1
 # ==========================================
 
 def encontrar_doc01(estado_jogo):
+    """Registra o DOC01 no inventário."""
+
+    if not isinstance(estado_jogo, dict):
+        return False
 
     if estado_jogo.get("capitulo_atual") != 1:
-        print("Este documento pertence ao Capítulo 1.")
         return False
 
-    if not encontrar_documento(estado_jogo, "DOC01"):
-        print("O documento já foi encontrado ou não pôde ser registrado.")
-        return False
+    return encontrar_documento(estado_jogo, "DOC01")
 
-    print("\nDOC01 encontrado e registrado no inventário!")
-
-    return True
-
-
-# ==========================================
-# CONSULTAR DOC01
-# ==========================================
 
 def consultar_doc01(estado_jogo):
+    """Devolve os dados do DOC01, caso já tenha sido encontrado."""
+
+    if not isinstance(estado_jogo, dict):
+        return None
 
     if estado_jogo.get("capitulo_atual") != 1:
-        print("Este documento pertence ao Capítulo 1.")
+        return None
+
+    return consultar_documento(estado_jogo, "DOC01")
+
+
+def encontrar_doc02(estado_jogo):
+    """Registra o DOC02 no inventário."""
+
+    if not isinstance(estado_jogo, dict):
         return False
 
-    documento = consultar_documento(estado_jogo, "DOC01")
-
-    if documento is None:
-        print("DOC01 ainda não foi encontrado.")
+    if estado_jogo.get("capitulo_atual") != 1:
         return False
 
-    print("""
-========================================
-       DOC01 — RELATÓRIO ORÁCULO
-========================================
+    return encontrar_documento(estado_jogo, "DOC02")
 
-Alex acessa um relatório confidencial
-relacionado ao desenvolvimento da IA.
 
-O documento apresenta informações
-sobre o comportamento do ORÁCULO,
-seu crescimento operacional e suas
-capacidades de processamento.
+def consultar_doc02(estado_jogo):
+    """Devolve os dados do DOC02, caso já tenha sido encontrado."""
 
-Um trecho chama a atenção:
+    if not isinstance(estado_jogo, dict):
+        return None
 
-"Os parâmetros originais de autonomia
-foram modificados durante as últimas
-atualizações do sistema."
+    if estado_jogo.get("capitulo_atual") != 1:
+        return None
 
-Alex percebe que o ORÁCULO pode estar
-operando com capacidades superiores
-às inicialmente autorizadas.
-
-O relatório indica que alguém dentro
-da NEXUS permitiu essas alterações.
-""")
-
-    print("\nInformações do documento:")
-    print("Código:", documento["codigo"])
-    print("Nome:", documento["nome"])
-    print("Autor:", documento["autor"])
-    print("Classificação:", documento["classificacao"])
-
-    return True
+    return consultar_documento(estado_jogo, "DOC02")

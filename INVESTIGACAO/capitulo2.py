@@ -4,14 +4,20 @@ capitulo2.py
 CyberQuest: O Protocolo ORÁCULO
 
 Responsabilidade:
-- Apresentar a conversa com Helena Voss.
-- Registrar a escolha de Alex.
+- Controlar as mecânicas de interação do Capítulo 2.
+- Registrar as decisões de Alex com Helena.
+- Registrar a abordagem única de Helena.
 - Atualizar a confiança de Helena.
-- Apresentar o DOC03.
+- Encontrar e consultar DOC03.
+
+Os diálogos e textos narrativos pertencem a HISTORIA/capitulo2.py.
 """
 
 from INVESTIGACAO.personagens import (
     abordar_personagem,
+    verificar_personagem_abordado,
+    motivo_bloqueio_abordagem,
+    motivo_bloqueio_confianca,
     registrar_escolha_confianca
 )
 
@@ -20,214 +26,124 @@ from INVESTIGACAO.investigacao import (
     consultar_documento
 )
 
-
-# ==========================================
-# CONVERSA COM HELENA VOSS
-# ==========================================
-
-def apresentar_conversa_helena():
-
-    print("""
-========================================
- CONVERSA COM HELENA VOSS
-========================================
-
-Alex: Diretora Voss. Precisamos conversar
-sobre o projeto ORÁCULO.
-
-Helena: Alex. Confesso que não esperava
-encontrar você novamente na NEXUS.
-
-Alex: Encontrei registros que indicam
-que ORÁCULO está realizando operações
-que não foram autorizadas originalmente.
-
-Helena: A evolução de uma inteligência
-artificial exige adaptações constantes.
-
-Alex: Adaptações ou decisões que vocês
-não conseguem mais controlar?
-
-Helena: Você sempre teve dificuldade
-em compreender o potencial desse projeto.
-
-Alex: E você sempre pareceu disposta
-a ignorar os riscos.
-
-Helena: ORÁCULO pode transformar
-a sociedade. Não podemos interromper
-seu desenvolvimento por medo do desconhecido.
-
-Alex: E quem será responsável pelas
-consequências?
-
-Helena: A história não se lembra daqueles
-que tiveram medo de avançar.
-Lembra daqueles que tiveram coragem.
-
-Alex: Então você acredita que qualquer
-sacrifício é justificável pelo progresso?
-
-Helena: Acredito que algumas decisões
-exigem uma visão maior do que interesses
-individuais.
-""")
-
-    print("\nEscolha a resposta de Alex:")
-    print("\n1 - Reconhecer a visão de Helena, mas exigir transparência.")
-    print("2 - Criticar Helena por ignorar os riscos do projeto.")
+from HISTORIA import capitulo2 as historia_capitulo2
 
 
 # ==========================================
-# REAÇÃO DE HELENA
+# INTERAÇÃO COM HELENA
 # ==========================================
 
-def apresentar_reacao_helena(escolha):
+def interagir_com_helena(estado_jogo, etapa, escolha):
+    """
+    Registra uma decisão de Alex durante a conversa com Helena.
 
-    if not isinstance(escolha, str):
-        escolha = str(escolha)
+    Etapas:
+    - progresso
+    - responsabilidade
 
-    escolha = escolha.strip()
+    Cada etapa aceita as escolhas "1" ou "2".
+    A abordagem de Helena é registrada somente na primeira etapa.
+    """
 
-    if escolha == "1":
-
-        print("""
-Alex: Entendo que você acredita no potencial
-de ORÁCULO. Mas progresso sem transparência
-pode colocar todos em risco.
-
-Helena: Talvez você ainda consiga compreender
-a dimensão do que estamos construindo.
-
-Alex: Vou continuar investigando.
-Preciso conhecer todas as consequências.
-
-Helena: Faça o que acredita ser necessário,
-Alex. Mas não espere que todos concordem
-com suas conclusões.
-""")
-
-        return "positiva"
-
-    elif escolha == "2":
-
-        print("""
-Alex: Você está colocando o futuro da NEXUS
-acima da segurança de todos.
-
-Helena: Cuidado com suas acusações, Alex.
-Você não conhece todas as decisões
-que precisaram ser tomadas.
-
-Alex: Então me mostre as informações.
-Não vou aceitar respostas incompletas.
-
-Helena: Parece que você continua
-tão desconfiado quanto antes.
-""")
-
-        return "negativa"
-
-    else:
-
-        print("Escolha inválida!")
-        return None
-
-
-# ==========================================
-# EXECUTAR INTERAÇÃO COM HELENA
-# ==========================================
-
-
-def interagir_com_helena(estado_jogo):
+    if not isinstance(estado_jogo, dict):
+        return {"sucesso": False, "mensagem": "Estado do jogo inválido."}
 
     if estado_jogo.get("capitulo_atual") != 2:
-        print("Esta interação pertence ao Capítulo 2.")
-        return False
+        return {"sucesso": False, "mensagem": "Esta interação pertence ao Capítulo 2."}
 
-    # Verifica se Helena já foi abordada neste capítulo
-    abordados = estado_jogo.get("personagens_abordados", {})
-    capitulo = str(estado_jogo["capitulo_atual"])
+    etapa = str(etapa).strip().lower()
+    escolha = str(escolha).strip()
 
-    if "helena" in abordados.get(capitulo, []):
-        print("Você já abordou este personagem neste capítulo!")
-        return False
+    if etapa not in ("progresso", "responsabilidade"):
+        return {"sucesso": False, "mensagem": "Etapa inválida."}
 
-    # Apresenta a conversa
-    apresentar_conversa_helena()
+    if escolha not in ("1", "2"):
+        return {"sucesso": False, "mensagem": "Escolha inválida. Selecione 1 ou 2."}
 
-    # Recebe a escolha de Alex
-    escolha = input("\nDigite sua escolha: ").strip()
+    ja_abordada = verificar_personagem_abordado(
+        estado_jogo, "helena"
+    )
 
-    # Verifica se a escolha é válida
-    resultado = apresentar_reacao_helena(escolha)
+    # A primeira etapa exige que Helena ainda não tenha sido abordada.
+    if etapa == "progresso":
+        motivo = motivo_bloqueio_abordagem(estado_jogo, "helena")
+        if motivo is not None:
+            return {"sucesso": False, "mensagem": motivo}
 
-    if resultado is None:
-        print("Interação não concluída. Tente novamente.")
-        return False
+    # A segunda etapa exige que a primeira abordagem já tenha acontecido.
+    elif etapa == "responsabilidade":
+        if not ja_abordada:
+            return {
+                "sucesso": False,
+                "mensagem": "Registre primeiro a etapa de progresso."
+            }
 
-    # Registra a abordagem somente após a escolha válida
-    if not abordar_personagem(estado_jogo, "helena"):
-        return False
+    # Verifica se a confiança pode ser alterada antes de registrar a decisão.
+    impacto = 20 if escolha == "1" else -20
 
-    # Atualiza a confiança de Helena
-    if not registrar_escolha_confianca(
+    motivo = motivo_bloqueio_confianca(
+        estado_jogo, "helena", impacto
+    )
+
+    if motivo is not None:
+        return {"sucesso": False, "mensagem": motivo}
+
+    # Registra a decisão narrativa em HISTORIA.
+    resultado = historia_capitulo2.registrar_decisao_helena(
+        estado_jogo, etapa, escolha
+    )
+
+    if not resultado.get("sucesso"):
+        return resultado
+
+    # A abordagem é registrada apenas na primeira etapa.
+    if etapa == "progresso":
+        if not abordar_personagem(estado_jogo, "helena"):
+            return {
+                "sucesso": False,
+                "mensagem": "Não foi possível registrar a abordagem de Helena."
+            }
+
+    # Atualiza a confiança com base na classificação da escolha.
+    registro = registrar_escolha_confianca(
         estado_jogo,
         "helena",
-        resultado
-    ):
+        resultado["classificacao"],
+        motivo=f"Decisão de Alex na etapa {etapa} da conversa com Helena"
+    )
+
+    if registro is None:
+        return {
+            "sucesso": False,
+            "mensagem": "Não foi possível atualizar a confiança de Helena."
+        }
+
+    return resultado
+
+
+# ==========================================
+# DOCUMENTO DO CAPÍTULO 2
+# ==========================================
+
+def encontrar_doc03(estado_jogo):
+    """Registra o DOC03 no inventário."""
+
+    if not isinstance(estado_jogo, dict):
         return False
-
-    return True
-
-
-
-# ==========================================
-# APRESENTAR DOC03
-# ==========================================
-
-def apresentar_doc03(estado_jogo):
 
     if estado_jogo.get("capitulo_atual") != 2:
-        print("Este documento pertence ao Capítulo 2.")
         return False
 
-    if not encontrar_documento(estado_jogo, "DOC03"):
-        print("O documento já foi encontrado ou não pôde ser registrado.")
-        return False
+    return encontrar_documento(estado_jogo, "DOC03")
 
-    documento = consultar_documento(estado_jogo, "DOC03")
 
-    print("""
-========================================
- DOC03 — MEMORANDO ESTRATÉGICO NEXUS
-========================================
+def consultar_doc03(estado_jogo):
+    """Devolve os dados do DOC03, caso já tenha sido encontrado."""
 
-Alex encontra um memorando confidencial
-sobre os objetivos estratégicos da NEXUS.
+    if not isinstance(estado_jogo, dict):
+        return None
 
-O documento revela que a diretoria considera
-ORÁCULO um projeto essencial para ampliar
-a influência da organização.
+    if estado_jogo.get("capitulo_atual") != 2:
+        return None
 
-O texto menciona planos de expansão,
-integração de sistemas e utilização
-da inteligência artificial em decisões
-de grande impacto.
-
-Uma observação chama a atenção de Alex:
-
-"Os riscos operacionais são conhecidos.
-A continuidade do projeto permanece
-como prioridade estratégica."
-
-Alex percebe que Helena não está apenas
-defendendo uma pesquisa científica.
-Ela está defendendo um projeto que pode
-alterar o equilíbrio de poder.
-""")
-
-    print("\nDocumento registrado no inventário:")
-    print(documento["codigo"], "-", documento["nome"])
-
-    return True
+    return consultar_documento(estado_jogo, "DOC03")
