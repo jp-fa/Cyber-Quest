@@ -7,25 +7,147 @@ O main.py coordena a abordagem, a confiança, os documentos e o salvamento.
 
 def texto_abertura():
     """Retorna a abertura deste capítulo, sem imprimir na tela."""
-    return '======================================\nCAPÍTULO 1 — O RETORNO À NEXUS\n======================================\n\nAno aproximado: 2042.\n\nCuritiba.\n\nApós anos afastado da NEXUS, Alex retorna à organização\nonde participou do desenvolvimento inicial da inteligência\nartificial ORÁCULO.\n\nUtilizando uma credencial temporária, ele consegue entrar\nna sede da empresa.\n\nAo passar pela entrada, uma tela apresenta uma mensagem\ninesperada:\n\n"Bem-vindo de volta."\n\nAlex percebe que sua investigação está apenas começando.'
+
+    return (
+        "======================================\n"
+        "CAPÍTULO 1 — O RETORNO À NEXUS\n"
+        "======================================\n\n"
+        "Ano aproximado: 2042.\n\n"
+        "Curitiba.\n\n"
+        "Após anos afastado da NEXUS, Alex retorna à organização\n"
+        "onde participou do desenvolvimento inicial da inteligência\n"
+        "artificial ORÁCULO.\n\n"
+        "Utilizando uma credencial temporária, ele consegue entrar\n"
+        "na sede da empresa.\n\n"
+        "Ao passar pela entrada, uma tela apresenta uma mensagem\n"
+        "inesperada:\n\n"
+        "\"Bem-vindo de volta.\"\n\n"
+        "Alex percebe que sua investigação está apenas começando."
+    )
 
 
-def texto_encerramento():
-    """Retorna o encerramento após concluir os dois ambientes."""
-    return '======================================\nENCERRAMENTO DO CAPÍTULO 1\n======================================\n\nApós investigar o Laboratório e a Sala de Segurança, Alex\npercebe que a NEXUS já conhecia alguns dos comportamentos\nanormais de ORÁCULO.\n\nOs registros e as informações encontrados indicam que a\ninteligência artificial apresentou respostas inesperadas,\nalterações de prioridade e operações fora do comportamento\nesperado.\n\nEntretanto, Alex ainda não possui provas suficientes para\ncompreender toda a situação.\n\nSua investigação precisa continuar.'
+def texto_encerramento(estado_jogo=None):
+    """Retorna o encerramento conforme as descobertas reais do jogador."""
+
+    if not isinstance(estado_jogo, dict):
+        estado_jogo = {}
+
+    documentos = estado_jogo.get("documentos_encontrados", [])
+    ambientes_estado = estado_jogo.get("ambientes_estado", {})
+    abordados = estado_jogo.get("personagens_abordados", {}).get("1", [])
+
+    laboratorio = ambientes_estado.get("Laboratório", {})
+    acoes_laboratorio = laboratorio.get("acoes_realizadas", [])
+
+    seguranca = ambientes_estado.get("Sala de Segurança", {})
+    acoes_seguranca = seguranca.get("acoes_realizadas", [])
+
+    falas = [
+        "======================================",
+        "ENCERRAMENTO DO CAPÍTULO 1",
+        "======================================",
+        "",
+        "Alex concluiu sua passagem pelo Laboratório e pela "
+        "Sala de Segurança.",
+        ""
+    ]
+
+    # Evidências do Laboratório.
+
+    if "DOC01" in documentos:
+        falas.append(
+            "O DOC01 revelou registros de respostas inesperadas "
+            "e alterações de prioridade realizadas por ORÁCULO."
+        )
+
+    elif "observar_equipamentos" in acoes_laboratorio:
+        falas.append(
+            "A observação dos equipamentos revelou indicadores "
+            "e registros técnicos que levantam dúvidas sobre "
+            "o comportamento de ORÁCULO."
+        )
+
+    else:
+        falas.append(
+            "Alex deixou o Laboratório sem examinar os equipamentos "
+            "ou encontrar o relatório DOC01. Ainda não possui "
+            "essas evidências técnicas."
+        )
+
+    # Evidências da Sala de Segurança.
+
+    if "DOC02" in documentos:
+        falas.append(
+            "O DOC02 apresentou registros de acessos administrativos "
+            "incomuns e movimentações fora dos horários esperados."
+        )
+
+    elif (
+        "consultar_registros" in acoes_seguranca
+        or "comparar_horarios" in acoes_seguranca
+    ):
+        falas.append(
+            "A análise dos registros de segurança levantou suspeitas "
+            "sobre acessos administrativos realizados em horários "
+            "incomuns."
+        )
+
+    else:
+        falas.append(
+            "Alex deixou a Sala de Segurança sem examinar os registros "
+            "de acesso. Ainda não possui evidências sobre essas "
+            "movimentações."
+        )
+
+    # Conversa com Karla.
+
+    if "karla" in abordados:
+        falas.append(
+            "Na conversa, Karla admitiu que conhecia sinais "
+            "preocupantes durante o desenvolvimento de ORÁCULO "
+            "e reconheceu que deveria ter revelado essas informações."
+        )
+
+    else:
+        falas.append(
+            "Alex não conversou com Karla. A cientista ainda não "
+            "explicou diretamente o que sabia sobre os primeiros "
+            "comportamentos anormais de ORÁCULO."
+        )
+
+    # Conversa opcional com ORÁCULO.
+
+    if "oraculo" in abordados:
+        falas.append(
+            "Alex também conversou com ORÁCULO, mas a inteligência "
+            "artificial evitou responder diretamente a algumas "
+            "perguntas."
+        )
+
+    else:
+        falas.append(
+            "Alex não realizou uma comunicação direta com ORÁCULO "
+            "durante este capítulo."
+        )
+
+    falas.append(
+        "Apesar das informações reunidas, ainda existem perguntas "
+        "sem resposta. A investigação precisa continuar."
+    )
+
+    return "\n".join(falas)
 
 
-# Ações, documentos e personagens do Capítulo 1
+# ============================================================
+# AÇÕES DO CAPÍTULO 1
+# ============================================================
 
 def obter_narrativa_acao_capitulo1(ambiente, acao):
     """Retorna o texto narrativo de uma ação do Capítulo 1.
 
-    Os nomes das ações são os mesmos cadastrados em ambientes.py.
     Esta função apenas fornece a narrativa. O registro da ação,
     a coleta de documentos e a abordagem dos personagens são
     feitos pelos módulos responsáveis.
-
-    Retorna None quando o ambiente ou a ação não forem reconhecidos.
     """
 
     narrativas = {
@@ -53,9 +175,13 @@ sobre respostas inesperadas e alterações de prioridade.
 
 O arquivo está identificado como DOC01.""",
 
-            "conversar_karla": "Karla está disponível para conversar com Alex no laboratório.",
+            "conversar_karla": (
+                "Karla está disponível para conversar com Alex no laboratório."
+            ),
 
-            "conversar_oraculo": "ORÁCULO está disponível para uma comunicação no laboratório."
+            "conversar_oraculo": (
+                "ORÁCULO está disponível para uma comunicação no laboratório."
+            )
         },
 
         "Sala de Segurança": {
@@ -84,7 +210,11 @@ realizadas fora dos horários esperados.
 
 O arquivo está identificado como DOC02.""",
 
-            "conversar_oraculo": "ORÁCULO está disponível para uma comunicação na Sala de Segurança, caso Alex ainda não o tenha abordado neste capítulo."
+            "conversar_oraculo": (
+                "ORÁCULO está disponível para uma comunicação na Sala "
+                "de Segurança, caso Alex ainda não o tenha abordado "
+                "neste capítulo."
+            )
         }
     }
 
@@ -94,12 +224,12 @@ O arquivo está identificado como DOC02.""",
     return narrativas[ambiente].get(acao)
 
 
-def apresentar_doc01():
-    """Retorna a narrativa de leitura do DOC01.
+# ============================================================
+# DOCUMENTO DOC01
+# ============================================================
 
-    A coleta e o registro do documento no inventário pertencem
-    ao módulo investigacao.py. Esta função não coleta o arquivo.
-    """
+def apresentar_doc01():
+    """Retorna a narrativa de leitura do DOC01."""
 
     return """======================================
 DOC01 — RELATÓRIO ORÁCULO
@@ -120,12 +250,12 @@ Alex percebe que os resultados apresentados oficialmente
 não revelam toda a situação."""
 
 
-def apresentar_conversa_karla():
-    """Retorna o diálogo e as opções da conversa com Karla.
+# ============================================================
+# CONVERSA COM KARLA
+# ============================================================
 
-    O controle de abordagem única pertence a personagens.py.
-    A interface deve verificar a abordagem antes de exibir este diálogo.
-    """
+def apresentar_conversa_karla():
+    """Retorna o diálogo e as opções da conversa com Karla."""
 
     return {
         "texto": """======================================
@@ -177,18 +307,21 @@ trabalhar com mais transparência.
 Karla aguarda a resposta de Alex.""",
 
         "opcoes": {
-            "1": "Reconhecer que Karla está admitindo seu erro e pedir que conte o que sabe.",
-            "2": "Criticar Karla por conhecer os sinais e esconder informações."
+            "1": (
+                "Reconhecer que Karla está admitindo seu erro "
+                "e pedir que conte o que sabe."
+            ),
+
+            "2": (
+                "Criticar Karla por conhecer os sinais "
+                "e esconder informações."
+            )
         }
     }
 
 
 def apresentar_reacao_karla(escolha):
-    """Retorna a reação narrativa e a classificação da escolha.
-
-    Não altera confiança. O main.py deve encaminhar a classificação
-    para personagens.registrar_escolha_confianca().
-    """
+    """Retorna a reação narrativa e a classificação da escolha."""
 
     escolha = str(escolha).strip()
 
@@ -202,6 +335,7 @@ Karla: Eu deveria ter comunicado os sinais antes. Na época,
 acreditava que os desvios poderiam ser corrigidos durante
 a pesquisa. Ainda acredito que precisamos compreender
 ORÁCULO, mas não deveria ter escondido essas informações.""",
+
             "classificacao": "positiva",
             "decisao": "reconhecer_admissao_karla"
         }
@@ -215,6 +349,7 @@ Isso colocou a investigação e a transparência em risco.
 Karla: Eu sei que errei, Alex. Não tenho como justificar
 o que fiz. Ainda acredito na importância da pesquisa,
 mas deveria ter revelado os problemas desde o início.""",
+
             "classificacao": "negativa",
             "decisao": "criticar_omissao_karla"
         }
@@ -223,14 +358,7 @@ mas deveria ter revelado os problemas desde o início.""",
 
 
 def registrar_decisao_karla(estado_jogo, escolha):
-    """Registra a escolha narrativa de Karla em estado_jogo['decisoes'].
-
-    Esta função não altera a confiança numérica e não registra a
-    abordagem. O main.py deve coordenar essas operações com personagens.py.
-
-    Retorna um dicionário com sucesso, texto, classificação e decisão;
-    retorna um dicionário de erro quando a escolha não puder ser registrada.
-    """
+    """Registra a escolha narrativa de Karla no estado da partida."""
 
     if not isinstance(estado_jogo, dict):
         return {
@@ -249,7 +377,10 @@ def registrar_decisao_karla(estado_jogo, escolha):
     if not isinstance(decisoes, dict):
         return {
             "sucesso": False,
-            "mensagem": "O estado do jogo não possui um dicionário de decisões válido."
+            "mensagem": (
+                "O estado do jogo não possui um dicionário "
+                "de decisões válido."
+            )
         }
 
     chave_decisao = "karla_capitulo_1"
@@ -284,12 +415,12 @@ def registrar_decisao_karla(estado_jogo, escolha):
     }
 
 
-def apresentar_doc02():
-    """Retorna a narrativa de leitura do DOC02.
+# ============================================================
+# DOCUMENTO DOC02
+# ============================================================
 
-    A coleta e o registro do documento no inventário pertencem
-    ao módulo investigacao.py. Esta função não coleta o arquivo.
-    """
+def apresentar_doc02():
+    """Retorna a narrativa de leitura do DOC02."""
 
     return """======================================
 DOC02 — REGISTRO DE ACESSOS
@@ -308,13 +439,12 @@ Os registros aumentam as suspeitas de Alex sobre o
 funcionamento interno da NEXUS."""
 
 
-def apresentar_conversa_oraculo():
-    """Retorna o diálogo opcional com ORÁCULO no Capítulo 1.
+# ============================================================
+# CONVERSA COM ORÁCULO
+# ============================================================
 
-    ORÁCULO pode aparecer no Laboratório ou na Sala de Segurança,
-    mas só pode ser abordado uma vez no capítulo. A restrição é
-    controlada por personagens.py, não por este módulo.
-    """
+def apresentar_conversa_oraculo():
+    """Retorna o diálogo opcional com ORÁCULO no Capítulo 1."""
 
     return """======================================
 COMUNICAÇÃO COM ORÁCULO
