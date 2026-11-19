@@ -1,0 +1,34 @@
+{
+  "versao": 2,
+  "estado": {
+    "capitulo_atual": 1,
+    "ambiente_atual": null,
+    "ambientes_visitados": [],
+    "ambientes_estado": {},
+    "personagens_abordados": {
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "confianca": {
+      "helena": 30,
+      "karla": 50,
+      "dante": 40,
+      "oraculo": 0
+    },
+    "escolhas_confianca": {
+      "helena": [],
+      "karla": [],
+      "dante": [],
+      "oraculo": []
+    },
+    "documentos_encontrados": [],
+    "documentos_entregues": [],
+    "historico_entregas": [],
+    "decisoes": {},
+    "decisao_final": null,
+    "final": null,
+    "cena_atual": null,
+    "jogo_concluido": false
+  }
+}
