@@ -1,0 +1,100 @@
+{
+  "versao": 2,
+  "estado": {
+    "capitulo_atual": 3,
+    "ambiente_atual": null,
+    "ambientes_visitados": [
+      "Laboratório",
+      "Sala de Segurança",
+      "Sala de Planejamento",
+      "Escritório de Dante"
+    ],
+    "ambientes_estado": {
+      "Laboratório": {
+        "acoes_realizadas": [
+          "observar_equipamentos",
+          "investigar_ponto_cego",
+          "encontrar_doc01"
+        ]
+      },
+      "Sala de Segurança": {
+        "acoes_realizadas": [
+          "consultar_registros",
+          "comparar_horarios",
+          "encontrar_doc02"
+        ]
+      },
+      "Sala de Planejamento": {
+        "acoes_realizadas": [
+          "examinar_projecoes",
+          "investigar_planos",
+          "encontrar_doc03",
+          "entregar_documentos",
+          "comunicacao_oraculo"
+        ]
+      },
+      "Escritório de Dante": {
+        "acoes_realizadas": [
+          "investigar_escritorio",
+          "explorar_ponto_cego",
+          "encontrar_doc04",
+          "entregar_documentos"
+        ]
+      }
+    },
+    "personagens_abordados": {
+      "1": [
+        "oraculo"
+      ],
+      "2": [],
+      "3": []
+    },
+    "confianca": {
+      "helena": 30,
+      "karla": 50,
+      "dante": 40,
+      "oraculo": 0
+    },
+    "escolhas_confianca": {
+      "helena": [],
+      "karla": [],
+      "dante": [],
+      "oraculo": []
+    },
+    "documentos_encontrados": [
+      "DOC01",
+      "DOC02",
+      "DOC03",
+      "DOC04"
+    ],
+    "documentos_entregues": [
+      {
+        "codigo": "DOC03",
+        "documento": "Memorando Estratégico NEXUS",
+        "personagem": "helena",
+        "nome_personagem": "Helena Voss"
+      },
+      {
+        "codigo": "DOC01",
+        "documento": "Relatório ORÁCULO",
+        "personagem": "helena",
+        "nome_personagem": "Helena Voss"
+      },
+      {
+        "codigo": "DOC04",
+        "documento": "Documento Secreto",
+        "personagem": "dante",
+        "nome_personagem": "Dante Moreau"
+      }
+    ],
+    "historico_entregas": [],
+    "decisoes": {
+      "plano_dante_revelado": true,
+      "dante_confrontado": true
+    },
+    "decisao_final": "manter",
+    "final": "final_continuidade",
+    "cena_atual": null,
+    "jogo_concluido": true
+  }
+}
