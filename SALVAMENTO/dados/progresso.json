@@ -2,30 +2,62 @@
   "versao": 2,
   "estado": {
     "capitulo_atual": 1,
-    "ambiente_atual": null,
+    "ambiente_atual": "Laboratório",
     "ambientes_visitados": [],
-    "ambientes_estado": {},
+    "ambientes_estado": {
+      "Laboratório": {
+        "acoes_realizadas": [
+          "conversar_karla",
+          "investigar_ponto_cego",
+          "observar_equipamentos",
+          "encontrar_doc01"
+        ]
+      }
+    },
     "personagens_abordados": {
-      "1": [],
+      "1": [
+        "karla"
+      ],
       "2": [],
       "3": []
     },
     "confianca": {
       "helena": 30,
-      "karla": 50,
+      "karla": 30,
       "dante": 40,
       "oraculo": 0
     },
     "escolhas_confianca": {
       "helena": [],
-      "karla": [],
+      "karla": [
+        {
+          "capitulo": 1,
+          "personagem": "karla",
+          "valor": -20,
+          "confianca_anterior": 50,
+          "confianca_atual": 30,
+          "alteracao": -20,
+          "motivo": "Escolha negativa do jogador",
+          "escolha": "negativa"
+        }
+      ],
       "dante": [],
       "oraculo": []
     },
-    "documentos_encontrados": [],
+    "documentos_encontrados": [
+      "DOC01"
+    ],
     "documentos_entregues": [],
     "historico_entregas": [],
-    "decisoes": {},
+    "decisoes": {
+      "karla_capitulo_1": {
+        "capitulo": 1,
+        "personagem": "karla",
+        "opcao": "2",
+        "identificador": "criticar_omissao_karla",
+        "classificacao": "negativa"
+      }
+    },
     "decisao_final": null,
     "final": null,
     "cena_atual": null,
