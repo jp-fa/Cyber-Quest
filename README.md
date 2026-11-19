@@ -428,9 +428,9 @@ Projeto acadêmico desenvolvido em equipe para a disciplina de **Raciocínio Alg
 | Integrante | Responsabilidade principal |
 |---|---|
 | **João Vitor Cuzesyn** | História, diálogos, capítulos e finais |
-| **[João Pedro Ferreira Arceli]** | Investigação, personagens, documentos e confiança |
-| **[Rhuan Vales Santana]** | Interface gráfica e experiência do usuário |
-| **[Bruno César Machado da Silva Junior ]** | Ambientes, persistência JSON e sistemas de apoio |
+| **João Pedro Ferreira Arceli** | Investigação, personagens, documentos e confiança |
+| **Rhuan Vales Santana** | Interface gráfica e experiência do usuário |
+| **Bruno César Machado da Silva Junior** | Ambientes, persistência JSON e sistemas de apoio |
 
 ---
 
